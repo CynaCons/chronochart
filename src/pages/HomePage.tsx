@@ -965,8 +965,8 @@ function HomePageContent() {
             </div>
             <div className="border rounded-xl p-5 md:p-6 w-40 md:w-48" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
               <div className="flex items-center gap-2 mb-1">
-                <span className="material-symbols-rounded text-lg" style={{ color: '#f59e0b' }}>visibility</span>
-                <div className="text-2xl md:text-3xl font-bold" style={{ color: '#f59e0b' }}>{stats.viewCount}</div>
+                <span className="material-symbols-rounded text-lg" style={{ color: '#5b5bd6' }}>visibility</span>
+                <div className="text-2xl md:text-3xl font-bold" style={{ color: '#5b5bd6' }}>{stats.viewCount}</div>
               </div>
               <div className="text-sm" style={{ color: 'var(--page-text-secondary)' }}>Total Views</div>
             </div>

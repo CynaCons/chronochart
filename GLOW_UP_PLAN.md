@@ -159,6 +159,11 @@ A separate agent reviewed the plan + evidence + verified both root-caused fixes 
 
 ---
 
+## Implementation Log (Calm Modern build — branch `glowup/calm-modern`)
+> Self-paced loop. Constraint: timeline **engine logic untouched** — visual polish only. Tested on localhost:5173 (dev Firebase).
+- **Iter 1** (`785ac6b`): Calm Modern token foundation — MUI primary blue→indigo (green Sign In→indigo); light theme rewritten to white/cool-gray/indigo incl. `--cc-*` canvas + `--stream-*`; softer cards; de-ambered shared accents. Browse/profile = Calm Modern; smoke clean.
+- **Iter 2**: De-ambered LandingPage hardcoded oranges (hero CTA→indigo, feature-card accents→indigo/cyan/emerald, roadmap highlight→indigo) + unified Platform-stats "Total Views" amber→indigo. Landing now shares the indigo accent language; smoke clean. *Next: full landing light-band conversion (G4.5); persona-card redesign (G4.3).*
+
 ## Audit Log (the iterative method)
 - **Round 0 — Recon (✅):** surface map, 8-timeline catalog, 13 screenshots, 9 bugs incl. deep-link redirect (root-caused). → `audit/RECON.md`
 - **Round 1 — Broad 6-lens audit (✅):** 46 evidence-cited findings, all dimensions 3/10. → `audit/findings/round1.json`

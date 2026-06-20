@@ -254,7 +254,7 @@ export function LandingPage() {
               onClick={handleBrowseTimelines}
               data-testid="cta-explore-examples"
               sx={{
-                bgcolor: '#f97316',
+                bgcolor: '#5b5bd6',
                 color: '#fff',
                 fontSize: '1.1rem',
                 px: 5,
@@ -264,8 +264,8 @@ export function LandingPage() {
                 fontWeight: 600,
                 boxShadow: 'var(--shadow-cta-glow)',
                 '&:hover': {
-                  bgcolor: '#ea580c',
-                  boxShadow: '0 6px 20px rgba(249, 115, 22, 0.5)',
+                  bgcolor: '#4a4ac8',
+                  boxShadow: '0 6px 20px rgba(91, 91, 214, 0.5)',
                 },
               }}
             >
@@ -287,7 +287,7 @@ export function LandingPage() {
                 fontWeight: 600,
                 '&:hover': {
                   borderColor: 'var(--page-accent)',
-                  bgcolor: 'rgba(226, 163, 54, 0.1)',
+                  bgcolor: 'rgba(91, 91, 214, 0.08)',
                 },
               }}
             >
@@ -470,19 +470,19 @@ export function LandingPage() {
                 flex: 1,
                 bgcolor: 'rgba(17, 17, 16, 0.5)',
                 border: '1px solid rgba(46, 44, 40, 0.5)',
-                borderTop: '3px solid #e2a336',
+                borderTop: '3px solid #7c7cf0',
                 borderRadius: 2,
                 backdropFilter: 'blur(4px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: '#e2a336',
+                  borderColor: '#7c7cf0',
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 24px rgba(226, 163, 54, 0.2)',
+                  boxShadow: '0 8px 24px rgba(124, 124, 240, 0.2)',
                 },
               }}
             >
               <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <TimelineIcon sx={{ fontSize: 56, color: '#e2a336', mb: 2 }} />
+                <TimelineIcon sx={{ fontSize: 56, color: '#7c7cf0', mb: 2 }} />
                 <Typography variant="h5" gutterBottom sx={{ color: 'var(--page-text-primary)', fontWeight: 600, mb: 2 }}>
                   Infinite Zoom
                 </Typography>
@@ -528,19 +528,19 @@ export function LandingPage() {
                 flex: 1,
                 bgcolor: 'rgba(17, 17, 16, 0.5)',
                 border: '1px solid rgba(46, 44, 40, 0.5)',
-                borderTop: '3px solid #f97316',
+                borderTop: '3px solid #34d399',
                 borderRadius: 2,
                 backdropFilter: 'blur(4px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: '#f97316',
+                  borderColor: '#34d399',
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 24px rgba(249, 115, 22, 0.2)',
+                  boxShadow: '0 8px 24px rgba(52, 211, 153, 0.2)',
                 },
               }}
             >
               <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <SearchIcon sx={{ fontSize: 56, color: '#f97316', mb: 2 }} />
+                <SearchIcon sx={{ fontSize: 56, color: '#34d399', mb: 2 }} />
                 <Typography variant="h5" gutterBottom sx={{ color: 'var(--page-text-primary)', fontWeight: 600, mb: 2 }}>
                   Share & Verify
                 </Typography>
@@ -652,7 +652,7 @@ export function LandingPage() {
                   left: '11px',
                   top: '2px',
                   fontSize: 20,
-                  color: '#f97316',
+                  color: '#5b5bd6',
                   animation: 'pulse 2s ease-in-out infinite',
                   '@keyframes pulse': {
                     '0%, 100%': { opacity: 1 },
@@ -665,8 +665,8 @@ export function LandingPage() {
               />
               <Box
                 sx={{
-                  bgcolor: 'rgba(249, 115, 22, 0.1)',
-                  border: '1px solid rgba(249, 115, 22, 0.3)',
+                  bgcolor: 'rgba(91, 91, 214, 0.08)',
+                  border: '1px solid rgba(91, 91, 214, 0.28)',
                   borderRadius: 2,
                   p: 2,
                   flex: 1,
@@ -675,7 +675,7 @@ export function LandingPage() {
                 <Typography
                   variant="body1"
                   sx={{
-                    color: '#f97316',
+                    color: '#5b5bd6',
                     fontWeight: 600,
                     fontSize: '1rem',
                     mb: 0.5,
@@ -784,7 +784,7 @@ export function LandingPage() {
               fontWeight: 600,
               '&:hover': {
                 borderColor: 'var(--page-accent)',
-                bgcolor: 'rgba(226, 163, 54, 0.1)',
+                bgcolor: 'rgba(91, 91, 214, 0.08)',
               },
             }}
           >
