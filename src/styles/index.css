@@ -1,17 +1,17 @@
 /* Global CSS Variables for Semantic Color System */
 
 :root {
-  /* Primary Colors */
-  --color-primary-50: #E3F2FD;
-  --color-primary-100: #BBDEFB;
-  --color-primary-200: #90CAF9;
-  --color-primary-300: #64B5F6;
-  --color-primary-400: #42A5F5;
-  --color-primary-500: #2196F3;
-  --color-primary-600: #1E88E5;
-  --color-primary-700: #1976D2;
-  --color-primary-800: #1565C0;
-  --color-primary-900: #0D47A1;
+  /* Primary Colors — "Calm Modern" indigo */
+  --color-primary-50: #EEEEFB;
+  --color-primary-100: #E0E0F8;
+  --color-primary-200: #C7C7F2;
+  --color-primary-300: #A5A5EC;
+  --color-primary-400: #8080E3;
+  --color-primary-500: #5B5BD6;
+  --color-primary-600: #4A4AC8;
+  --color-primary-700: #3F3FB0;
+  --color-primary-800: #33338F;
+  --color-primary-900: #28286E;
 
   /* Secondary Colors */
   --color-secondary-50: #F3E5F5;
@@ -108,8 +108,8 @@
 /* Dark Theme Variables */
 [data-theme="dark"] {
   /* Adjust primary colors for better dark mode contrast */
-  --color-primary-500: #64B5F6;
-  --color-primary-700: #42A5F5;
+  --color-primary-500: #7C7CF0;
+  --color-primary-700: #9A9AF5;
 
   --color-success-500: #66BB6A;
   --color-warning-500: #FFA726;
@@ -272,7 +272,7 @@
 
 /* Elevation System */
 .card-elevation-1 {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 2px rgba(20, 30, 60, 0.04), 0 4px 12px -6px rgba(20, 30, 60, 0.10);
 }
 
 .card-elevation-2 {
@@ -302,7 +302,7 @@
 
 .card-hover-scale:hover {
   transform: scale(1.02);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 24px -10px rgba(20, 30, 60, 0.22);
   z-index: 15;
 }
 
