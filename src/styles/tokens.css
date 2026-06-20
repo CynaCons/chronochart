@@ -7,23 +7,23 @@
   --page-border: #2e2c28;
   --page-text-primary: #eeece8;
   --page-text-secondary: #a8a49c; /* warm gray, WCAG AA 7.1:1 on --page-bg */
-  --page-accent: #e2a336;
-  --page-accent-hover: #c98a1f;
+  --page-accent: #7c7cf0;
+  --page-accent-hover: #9a9af5;
   --nav-bg: #161514;
   --nav-border: #2e2c28;
   --card-bg: #1c1b19;
   --card-border: #2e2c28;
-  --card-border-hover: #e2a336;
+  --card-border-hover: #7c7cf0;
   --input-bg: #1c1b19;
   --input-border: #2e2c28;
-  --input-focus-border: #e2a336;
-  --input-focus-shadow: rgba(226, 163, 54, 0.12);
+  --input-focus-border: #7c7cf0;
+  --input-focus-shadow: rgba(124, 124, 240, 0.18);
 
   /* Card visual depth */
   --card-bg-gradient: linear-gradient(145deg, rgba(30,28,24,0.5) 0%, transparent 100%);
-  --card-glow-hover: 0 0 20px rgba(226,163,54,0.08);
-  --gradient-hero-text: linear-gradient(135deg, #f5c542 0%, #e88d3e 50%, #e6584e 100%);
-  --shadow-cta-glow: 0 4px 16px rgba(249,115,22,0.3);
+  --card-glow-hover: 0 0 20px rgba(124,124,240,0.10);
+  --gradient-hero-text: linear-gradient(135deg, #7c7cf0 0%, #5b5bd6 100%);
+  --shadow-cta-glow: 0 6px 18px -6px rgba(91,91,214,0.45);
   --font-heading: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
   /* Typography Scale */
@@ -65,8 +65,8 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover: 0 8px 32px -8px rgba(0,0,0,0.5), 0 0 20px rgba(226,163,54,0.06);
-  --shadow-accent-glow: 0 4px 12px rgba(226, 163, 54, 0.3);
+  --shadow-card-hover: 0 8px 32px -8px rgba(0,0,0,0.5), 0 0 20px rgba(124,124,240,0.10);
+  --shadow-accent-glow: 0 6px 16px -6px rgba(124, 124, 240, 0.4);
 
   /* Transitions */
   --duration-fast: 150ms;
@@ -77,7 +77,7 @@
 
   /* Brand */
   --color-beta-orange: #f97316;
-  --gradient-brand: linear-gradient(135deg, #e2a336 0%, #e88d3e 100%);
+  --gradient-brand: linear-gradient(135deg, #5b5bd6 0%, #7c7cf0 100%);
 
   /* Navigation */
   --nav-hover-bg: color-mix(in srgb, var(--page-accent) 16%, var(--nav-bg, transparent));
@@ -95,17 +95,17 @@
   --cc-color-axis-line-strong: #ffffff80;
   --cc-color-grid-minor: #ffffff25;
   --cc-color-grid-major: #ffffff40;
-  --cc-color-focus-accent: #74c7ec;
+  --cc-color-focus-accent: #8080e3;
   --cc-color-border: #2a3642;
   --cc-color-panel-bg: #1f2932;
   --cc-color-panel-fg: #e2e8f0;
-  --cc-color-accent-primary: #5090ea;
-  --cc-color-accent-primary-hover: #367bd9;
+  --cc-color-accent-primary: #7c7cf0;
+  --cc-color-accent-primary-hover: #9a9af5;
   --cc-color-anchor-fill: #e5e7eb; /* small light grey square */
   --cc-color-anchor-hover: #d1d5db; /* slightly darker on hover */
   --cc-color-anchor-outline: #9ca3af; /* subtle outline */
-  --cc-color-anchor-selected: #4f9dfc; /* refined selection tone */
-  --cc-color-selection-glow: #63b3ff55; /* translucent glow */
+  --cc-color-anchor-selected: #7c7cf0; /* refined selection tone (indigo) */
+  --cc-color-selection-glow: #7c7cf055; /* translucent glow */
   --cc-color-connector: #94a3b8;
   --cc-color-card-bg: #1d2730;
   --cc-color-card-border: #2e3a46;
@@ -224,8 +224,8 @@
   /* Stream Viewer (v0.5.26) */
   --stream-rail-color: #2e2c28;
   --stream-dot-size: 14px;
-  --stream-dot-color: #e2a336;
-  --stream-dot-color-hover: #f5c542;
+  --stream-dot-color: #7c7cf0;
+  --stream-dot-color-hover: #9a9af5;
   --stream-date-width: 56px;
   --stream-card-gap: 20px;
   --stream-bg: #111110;
@@ -251,82 +251,90 @@
   --color-warning-500: #f59e0b;
 }
 
-/* === Light Theme Overrides === */
+/* === Light Theme Overrides — "Calm Modern" (clean neutral + indigo) === */
 [data-theme="light"] {
-  /* Page-level variables — warm cream-white */
-  --page-bg: #faf8f5;
-  --page-bg-elevated: #f3f0eb;
-  --page-border: #d9d4cc;
-  --page-text-primary: #1c1b18;
-  --page-text-secondary: #6b675e; /* warm gray, WCAG AA 5.1:1 */
-  --page-accent: #c98a1f;
-  --page-accent-hover: #b07818;
-  --nav-bg: #f3f0eb;
-  --nav-border: #d9d4cc;
+  /* Page-level variables — clean white + cool gray */
+  --page-bg: #ffffff;
+  --page-bg-elevated: #f6f7f9;
+  --page-border: #e7eaf0;
+  --page-text-primary: #14161a;
+  --page-text-secondary: #5b6472; /* cool gray, WCAG AA */
+  --page-accent: #5b5bd6; /* Calm Modern indigo */
+  --page-accent-hover: #4a4ac8;
+  --nav-bg: #ffffff;
+  --nav-border: #e7eaf0;
   --card-bg: #ffffff;
-  --card-border: #d9d4cc;
-  --card-border-hover: #c98a1f;
+  --card-border: #e7eaf0;
+  --card-border-hover: #c7c7f2;
   --input-bg: #ffffff;
-  --input-border: #d9d4cc;
-  --input-focus-border: #c98a1f;
-  --input-focus-shadow: rgba(201, 138, 31, 0.15);
+  --input-border: #e7eaf0;
+  --input-focus-border: #5b5bd6;
+  --input-focus-shadow: rgba(91, 91, 214, 0.15);
 
-  /* Editor/Canvas variables for light mode */
-  --cc-bg-steel-0: #f0f2f5;
-  --cc-bg-steel-1: #f6f8fa;
+  /* Editor/Canvas variables (Calm Modern light) */
+  --cc-bg-steel-0: #f4f5f8;
+  --cc-bg-steel-1: #f9fafb;
   --cc-bg-steel-2: #ffffff;
   --cc-bg-steel-3: #ffffff;
-  --cc-bg-app: #f6f8fa;
-  --cc-color-axis-label: #1f2328;
-  --cc-color-axis-line: #00000040;
-  --cc-color-axis-line-strong: #00000060;
-  --cc-color-grid-minor: #00000015;
-  --cc-color-grid-major: #00000025;
-  --cc-color-border: #d0d7de;
+  --cc-bg-app: #f9fafb;
+  --cc-color-axis-label: #14161a;
+  --cc-color-axis-line: #00000030;
+  --cc-color-axis-line-strong: #00000052;
+  --cc-color-grid-minor: #00000012;
+  --cc-color-grid-major: #00000022;
+  --cc-color-border: #e7eaf0;
   --cc-color-panel-bg: #ffffff;
-  --cc-color-panel-fg: #1f2328;
+  --cc-color-panel-fg: #14161a;
+  --cc-color-accent-primary: #5b5bd6;
+  --cc-color-accent-primary-hover: #4a4ac8;
+  --cc-color-focus-accent: #5b5bd6;
+  --cc-color-anchor-selected: #5b5bd6;
+  --cc-color-selection-glow: #5b5bd644;
   --cc-color-card-bg: #ffffff;
-  --cc-color-card-border: #d0d7de;
-  --cc-color-card-divider: #d0d7de;
-  --cc-color-card-title: #1f2328;
-  --cc-color-card-body: #656d76;
-  --cc-bg-gradient: linear-gradient(180deg, #f6f8fa 0%, #ffffff 100%);
+  --cc-color-card-border: #e7eaf0;
+  --cc-color-card-divider: #eef0f4;
+  --cc-color-card-title: #14161a;
+  --cc-color-card-body: #5b6472;
+  --cc-color-connector: #b9c0cc;
+  --cc-bg-gradient: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
 
   /* Scrollbar styling (light theme) */
-  --scrollbar-track: #f3f0eb;
-  --scrollbar-thumb: #b8b2a8;
-  --scrollbar-thumb-hover: #999288;
+  --scrollbar-track: #f6f7f9;
+  --scrollbar-thumb: #cdd2db;
+  --scrollbar-thumb-hover: #b3bac6;
 
-  /* Stream Viewer (light theme) */
-  --stream-rail-color: #d9d4cc;
-  --stream-dot-color: #c98a1f;
-  --stream-dot-color-hover: #b07818;
-  --stream-bg: #faf8f5;
-  --stream-card-bg: #f3f0eb;
-  --stream-card-border: #d9d4cc;
-  --stream-text-primary: #1c1b18;
-  --stream-text-secondary: #6b675e; /* warm gray, WCAG AA */
-  --stream-text-muted: #656d76; /* Improved from #8c959f for WCAG AA contrast */
+  /* Stream Viewer (Calm Modern light) */
+  --stream-rail-color: #e7eaf0;
+  --stream-dot-color: #5b5bd6;
+  --stream-dot-color-hover: #4a4ac8;
+  --stream-bg: #ffffff;
+  --stream-card-bg: #ffffff;
+  --stream-card-border: #e7eaf0;
+  --stream-text-primary: #14161a;
+  --stream-text-secondary: #5b6472; /* cool gray, WCAG AA */
+  --stream-text-muted: #8b93a1;
 
-  /* Preview Event Styling (light mode) */
-  --preview-bg: rgba(251, 191, 36, 0.2); /* amber-400 with transparency for light mode */
-  --preview-border: #f59e0b; /* amber-500 */
-  --preview-glow: rgba(245, 158, 11, 0.4);
+  /* Preview Event Styling (AI temp events — amber semantic, kept) */
+  --preview-bg: rgba(245, 158, 11, 0.14);
+  --preview-border: #f59e0b;
+  --preview-glow: rgba(245, 158, 11, 0.35);
 }
 
 /* === Timeline Card Component Styles === */
 /* Premium card styling with depth and hover lift */
 .timeline-card {
   border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-sm);
-  border-radius: 12px;
-  transition: all var(--duration-normal) var(--easing-ease-out);
+  box-shadow: 0 1px 2px rgba(20,30,60,0.04), 0 6px 16px -10px rgba(20,30,60,0.12);
+  border-radius: 16px;
+  transition: transform var(--duration-normal) var(--easing-ease-out),
+              box-shadow var(--duration-normal) var(--easing-ease-out),
+              border-color var(--duration-normal) var(--easing-ease-out);
   background: var(--card-bg);
 }
 
 .timeline-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 36px -22px rgba(20,30,60,0.40);
   border-color: var(--card-border-hover);
 }
 

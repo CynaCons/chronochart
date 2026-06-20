@@ -1,0 +1,468 @@
+{
+  "summary": "Round 1: 6 parallel UI/UX audit lenses over PowerTimeline production screenshots",
+  "agentCount": 6,
+  "logs": [
+    "Round 1 complete: 6/6 dimensions returned findings"
+  ],
+  "result": [
+    {
+      "key": "visual-design",
+      "label": "Visual Design & Brand",
+      "dimension": "Visual design, brand identity & aesthetic quality",
+      "maturityScore": 3,
+      "summary": "This reads as a generic, AI-default template stitched together from two unrelated design systems rather than one credible product. The dark, orange-accented landing page and the bright cream-and-thin-border app pages (browse, profile) share almost no visual language — different backgrounds, card styling, type scale, and accent treatment — so the moment a visitor clicks \"Explore Public Timelines\" they feel like they've left for a different, blander website. Brand color discipline is broken: the product is \"orange,\" yet the primary \"Sign in\" button is green and the profile avatar is teal-green, so there is no consistent primary action color anywhere. Typography is flat and monotonous (one geometric sans, weak hierarchy, body copy that disappears into low contrast), the persona \"cards\" are featureless gray rectangles, and the landing alternates jarring full-bleed gray bands. For a relaunch trying to project authority on serious topics like \"The Iran War,\" the current visuals undercut credibility rather than build it. It is not broken, but it looks like an unfinished internal tool, not a product people would trust or share.",
+      "findings": [
+        {
+          "title": "Two disconnected design systems: dark orange marketing vs. cream thin-border app — no shared brand language",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "L",
+          "location": "Landing (01-landing-desktop.png, 09-landing-dark.png) vs. Browse (02-browse-desktop.png) and Profile (07-profile-desktop.png)",
+          "evidence": "The landing is near-black with glowing orange headlines, purple-tinted hero glow, and dark filled cards. The instant you reach /browse and /{user}, the entire surface flips to a bright off-white/cream background with white cards bounded by thin 1px gray hairline borders, black serif-less headings, and no orange accent on the cards at all (only the logo's small orange dot and a lone orange 'Beta' pill survive). There is zero visual continuity — different background tone, different card style (filled-dark vs. outlined-white), different type weight and color. A first-time visitor experiences a brand whiplash on the very first click.",
+          "recommendation": "Define ONE token-based design system (background tints, card surface + border, accent, type scale) and apply it across landing, browse, profile, and viewer. Pick either the dark/orange direction or a refined light direction and make the other its true theme variant — not a separate aesthetic. The browse/profile cards should adopt the same surface treatment and orange accent used in marketing so the product feels like one continuous experience."
+        },
+        {
+          "title": "Primary action color is inconsistent — orange brand, but green 'Sign in' button and green avatar",
+          "severity": "high",
+          "impact": "high",
+          "effort": "S",
+          "location": "Login (08-login-dark.png) green 'Sign in' CTA; Profile (07-profile-desktop.png) teal-green 'CY' avatar; vs. orange CTAs on Landing (01/09)",
+          "evidence": "Every marketing CTA ('Explore Public Timelines', roadmap highlight, hero text) is orange. But the login page's primary button 'Sign in' is solid green, the 'Sign in with Google' button is an unstyled dark outline, and the profile avatar is a flat teal-green circle. There is no single, repeatable 'primary action' color — orange, green, and bare-outline buttons all coexist. This signals an unfinished design system and erodes trust at the exact conversion moment (account creation/sign-in).",
+          "recommendation": "Standardize one primary button style (the orange brand color) for all primary actions including 'Sign in'. Reserve green only if it has a semantic meaning (success). Recolor the avatar default to a brand-consistent palette, and give 'Sign in with Google' the standard bordered-social-button treatment with a Google glyph rather than a flat dark rectangle."
+        },
+        {
+          "title": "Persona 'cards' are featureless flat gray rectangles with near-invisible body text — textbook generic AI template",
+          "severity": "high",
+          "impact": "medium",
+          "effort": "M",
+          "location": "Landing 'Built for people who connect the dots' section (01-landing-desktop.png, dark 09-landing-dark.png, mobile 11-landing-mobile.png)",
+          "evidence": "The six audience cards (Journalists & Investigators, Historians & Researchers, etc.) are identical mid-gray rounded rectangles with a bold title and a paragraph of body text so low in contrast it is essentially unreadable at a glance. No icons, no imagery, no per-persona color, no hierarchy beyond title vs. paragraph. In dark mode they collapse to charcoal-on-charcoal and the descriptions disappear entirely. This is the single most 'AI-default-template' element on the site — it looks like placeholder content that was never designed.",
+          "recommendation": "Give each persona card a distinct icon, a clear surface with adequate contrast (raise body-text contrast to at least 4.5:1), and consistent padding/rhythm. Consider reducing to 3-4 sharper personas with a one-line value prop each rather than six low-contrast paragraphs. Match the card surface to the unified design system from finding #1."
+        },
+        {
+          "title": "Weak, monotonous typographic hierarchy; tiny low-contrast subheads and an unreadable dense roadmap list",
+          "severity": "high",
+          "impact": "medium",
+          "effort": "M",
+          "location": "Landing hero subhead + 'Product Roadmap' (01-landing-desktop.png, 09-landing-dark.png, 11-landing-mobile.png)",
+          "evidence": "The hero headline 'Where events become understanding' is large orange, but the supporting subhead beneath it is small, gray, and so low-contrast against the dark hero it nearly vanishes. The entire site uses a single geometric sans with very little weight/size differentiation, so section headers, body, and labels read at a similar visual rank. The 'Product Roadmap' is a tall, cramped vertical list of ~15 near-identical small-text rows with minimal spacing and faint dividers — a dense gray wall with no scannable hierarchy. Nothing in the type system communicates 'serious, credible publication.'",
+          "recommendation": "Establish a deliberate type scale (e.g., display / h1 / h2 / body / caption with clear size + weight steps), raise subhead contrast, and add line-height/letter-spacing rhythm. Consider a distinctive display face for headlines to escape the default-sans look. Replace the roadmap wall with a compact, grouped, higher-contrast layout (or move it off the landing entirely, per the staleness bug)."
+        },
+        {
+          "title": "Giant ghosted 'PowerTimeline' watermark and clashing full-bleed gray bands break the landing's visual rhythm",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "M",
+          "location": "Landing hero + section banding (01-landing-desktop.png, 09-landing-dark.png)",
+          "evidence": "An oversized faint 'PowerTimeline' watermark sits ghosted across the lower hero, overlapping the CTA region and competing with the actual headline — it reads as an accidental low-opacity duplicate rather than intentional brand typography. Below, the page alternates between bright white sections and full-bleed solid mid-gray bands ('Tools for serious timeline work', and the gray strip under the hero), creating harsh horizontal seams instead of smooth vertical flow. The gray bands have no gradient, texture, or accent and look like unstyled section defaults.",
+          "recommendation": "Remove or drastically rethink the ghosted watermark (it adds noise, not brand). Replace the flat alternating gray/white bands with a cohesive background system (subtle tonal shifts, consistent section padding, optional faint accent) so sections flow rather than slam into each other."
+        },
+        {
+          "title": "Browse/profile cards are flat, sparse, and image-less — low information density and no visual draw",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "M",
+          "location": "Browse (02-browse-desktop.png) and Profile (07-profile-desktop.png) timeline cards",
+          "evidence": "Every timeline card is a white box with a thin gray border containing only: title, two lines of description, 'N events', a date, a '@cynacons' pill, and a 'Public' pill. No cover image, no era visualization, no color coding, no thumbnail of the timeline itself. They are visually interchangeable and dull — a 295-event 'Iran War' timeline looks identical to a 10-event one. The repeated grey '@cynacons' and 'Public' pills add clutter without value, and 'Invalid Date' appears on two cards (Greenland, Janus), making the grid look buggy.",
+          "recommendation": "Add a visual hook to each card — a mini timeline-density sparkline or era band, a generated cover/gradient keyed to category, and an event-count bar. Drop the redundant author pill on the owner's own profile, and fix the 'Invalid Date' rendering. Make card hierarchy lead with the timeline's character, not metadata pills."
+        },
+        {
+          "title": "Dark mode is not at parity — persona cards and dense lists lose contrast and readability",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "M",
+          "location": "Dark landing (09-landing-dark.png), dark canvas (10-frenchrev-canvas-dark.png)",
+          "evidence": "In dark mode the persona cards and roadmap rows become charcoal-on-near-black with body text that is effectively unreadable; the alternating section bands lose their distinction so the page reads as one undifferentiated dark slab. On the dark French Revolution canvas (10), the event cards are dark-gray boxes with small light text packed tightly with the era ruler — legible but flat and undifferentiated, with the only color being the orange timeline axis. The light browse/profile pages have no equivalent dark styling shown, suggesting partial/uneven dark-mode coverage.",
+          "recommendation": "Audit every surface in dark mode for the 4.5:1 contrast minimum, raise card-surface elevation (lighter charcoal + subtle border) so cards separate from the background, and ensure the dark theme is applied consistently across browse/profile/viewer, not just landing and canvas."
+        }
+      ]
+    },
+    {
+      "key": "core-product-ux",
+      "label": "Core Product (Timeline UX)",
+      "dimension": "Core product experience — timeline visualization (canvas + stream view)",
+      "maturityScore": 3,
+      "summary": "The core product inverts its own information hierarchy: the default desktop view is a \"canvas\" that, at 200-300 events, is a wall of truncated title-only cards floating around a single horizontal axis where most events are hidden behind \"+43\"/\"+33\" collapse pills — it is decorative, not readable. The genuinely good reading experience (Stream View, with dates, full descriptions, source counts) is demoted to a modal behind a button on desktop and is the ONLY thing available on mobile, where it suffers a hard layout bug (timestamps render on top of titles). A newcomer opening the 295-event Iran War timeline gets no entry point, no summary, no \"key moments\" — just an overwhelming field of half-sentences with a useless \"2026…2026\" minimap. The canvas-as-default decision is the single biggest product mistake here; for a relaunch the readable Stream View should be the front door and the canvas a secondary \"explore\" mode. This dimension is functional but actively works against comprehension and first-impression conversion.",
+      "findings": [
+        {
+          "title": "Default canvas view is a wall of truncated, dateless title cards — unreadable at 295 events",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "L",
+          "location": "Iran War canvas desktop (03-iranwar-canvas-desktop.png) and French Revolution canvas (06-frenchrev-canvas-desktop.png) — the default landing view of every timeline",
+          "evidence": "The default desktop view places ~14 visible cards in two horizontal bands above/below a single time axis. Every card shows ONLY a truncated title ending in an ellipsis ('US-Israeli Airstrikes Hit Iranian-...', 'US Launches Operation Epic Fur...', 'Hezbollah TV Station Al-Manar...', 'Hormuz Oil Flows Drop 97% to...'). No date, no description, no thumbnail is visible on the card face. The axis itself shows clustered dots with pink collapse pills reading '+43' and '+33' (Iran War) and '+4' (French Rev) — meaning dozens of events are hidden behind a single badge even at the default zoom. The reader cannot read a single complete fact without hovering or clicking. This is the FIRST thing every visitor sees.",
+          "recommendation": "Demote the canvas from the default. Make a readable view (the Stream View list, or a paginated 'key moments' summary) the default entry point and offer 'Explore on canvas' as an opt-in. If the canvas must stay, cards should show date + non-truncated title (wrap to 2 lines like the few cards that already do) and the '+43' clusters must be openable inline rather than requiring zoom. The goal: a newcomer reads at least 3 complete events in the first 5 seconds without interacting."
+        },
+        {
+          "title": "The readable mode (Stream View) is buried in a modal instead of being a first-class view/route",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "M",
+          "location": "Stream View desktop modal (04-iranwar-streamview-desktop.png) vs canvas default (03-iranwar-canvas-desktop.png)",
+          "evidence": "The Stream View is the genuinely good reading experience: a vertical chronological list with a date rail (e.g. 'Mar 1 2026'), a colored category dot, a bold full title ('Iran Interim Council Takes Control After Khamenei's Death'), a source count icon ('1', '4'), and a full description with 'Show more'. But it renders as a centered MODAL over a dark scrim with an X to close (04) — it is not a URL/route, so it cannot be deep-linked, shared, bookmarked, or indexed by search engines. The product's best asset for SEO and comprehension is hidden behind a transient overlay that disappears on a misclick, while the unreadable canvas owns the permanent URL.",
+          "recommendation": "Promote Stream View to a real first-class view with its own URL state (e.g. ?view=stream), make it the default on first visit, and let the canvas be the secondary toggle. A persistent, top-level 'List / Canvas' segmented toggle (not a buried button) should switch between them. This single change fixes readability, SEO indexability of event text, and shareability simultaneously."
+        },
+        {
+          "title": "Mobile renders Stream View only — the canvas is inaccessible, and event timestamps overlap the titles",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "S",
+          "location": "Iran War mobile stream (13-iranwar-streamview-mobile.png) and 'canvas' mobile (14-iranwar-canvas-mobile.png)",
+          "evidence": "Pixel-diffing 13 and 14 shows they are identical except for a 43px top header band — i.e. mobile has no real canvas; both states show the Stream View. Worse, on this sole mobile surface the per-event timestamp is absolutely positioned ON TOP of the heading: '23:56' overprints 'Israel Warns of Forceful Response' and '23:47' overprints 'Israel Carries Out Large-Scale Strikes' (visible in 13). The time and the first word of every multi-time event are mutually unreadable. Additionally the modal header is clipped to 'Strea…' because the floating minimap pill overlaps it (z-index/overlap collision in 13/14 top band).",
+          "recommendation": "Fix the timestamp positioning bug immediately (move the time into the left date rail under 'Mar 1', or onto its own line) — it is on the only screen mobile users have. Resolve the header overlap so 'Stream View' and the breadcrumb aren't clipped by the minimap. Then decide deliberately whether mobile gets a canvas at all; if not, design the stream as the intended mobile product rather than a fallback."
+        },
+        {
+          "title": "Minimap and date axis give zero orientation on dense single-period timelines",
+          "severity": "high",
+          "impact": "medium",
+          "effort": "M",
+          "location": "Iran War canvas toolbar/minimap (03-iranwar-canvas-desktop.png, top strip) and mobile minimap (13/14 top band)",
+          "evidence": "The 'Timeline Overview' minimap at the top renders the entire 295-event Iran War as a dense blue barcode labeled '2026' on the left and '2026' on the right — identical endpoints, because every event is within one year. There is no readable intermediate scale, so the minimap conveys nothing about where you are or how much is ahead. The on-canvas axis labels jump 'Mar 1 / Mar 4 / Mar 7 / Mar 10…' (3-day steps) yet still collapse 40+ events per tick into '+43' pills, so the axis is simultaneously too granular (labels) and too lossy (clusters). French Rev's minimap correctly shows '1748…1848' but the blue density is jammed into the far right (post-1789), exposing that 1748-1780 is near-empty filler.",
+          "recommendation": "Make the minimap scale-aware: when the span is sub-annual, label it by month/week; show a viewport rectangle indicating current position. Add density-aware zoom so clusters auto-expand as you zoom rather than hiding behind '+N'. Consider a 'jump to' month/phase chip row for orientation. For French Rev, the title/content date mismatch (title 1789-1799, content 1748-1835) should be corrected so the axis isn't padded with decades of sparse pre-history."
+        },
+        {
+          "title": "No first-5-seconds entry point: no summary, no 'key moments', no guided start on a 295-event timeline",
+          "severity": "high",
+          "impact": "high",
+          "effort": "M",
+          "location": "Iran War canvas (03-iranwar-canvas-desktop.png) and Stream View (04-iranwar-streamview-desktop.png) — both lack any intro affordance",
+          "evidence": "Opening the growth-driver 'The Iran War' timeline drops the visitor straight into either the unreadable canvas (03) or a flat chronological list (04) with no framing. There is no hero/summary paragraph, no 'Start here', no curated 'Key moments' filter, no count of phases, no 'what is this timeline about' card. The Stream View opens at the newest event ('Iran Interim Council Takes Control After Khamenei's Death') with no context for why that matters or what preceded it. For a current-events timeline meant to attract first-time visitors from search/social, the lack of an editorial entry point means high bounce.",
+          "recommendation": "Add a timeline intro/summary header (title, 1-2 sentence description, event count, date span, 'last updated') above the events, and a 'Key moments' or 'Highlights' filter that surfaces a curated 8-12 event subset for newcomers. This is especially high-leverage for the Iran War SEO/growth play — it gives search engines indexable prose and gives humans a 5-second answer to 'what is this and where do I start?'."
+        },
+        {
+          "title": "Canvas event cards are inconsistent (title-only vs. with-description) with no clear rule",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "M",
+          "location": "French Revolution canvas light (06-frenchrev-canvas-desktop.png) and dark (10-frenchrev-canvas-dark.png)",
+          "evidence": "Within the same viewport, most cards are single-line title-only pills ('Tennis Court Oath', 'Diamond Necklace Affair', 'Louisiana Purchase'), but a few render taller with a 2-line title plus a greyed description snippet ('Voltaire Publishes \"The Age of Louis XIV\" — Francois-Marie Arouet, known as Voltaire…'). The same inconsistency appears in dark mode (10). There is no visible logic for which cards expand, so the layout looks ragged and arbitrary rather than systematic, and card heights vary unpredictably within a row band.",
+          "recommendation": "Define one card spec and apply it uniformly: either all cards are compact title+date chips (descriptions on hover/click only), or all show a fixed-length description preview. Uniform card height per band will also tighten the layout and reduce the 'random floating boxes' feel that reads as an unfinished/AI-template UI."
+        },
+        {
+          "title": "Zoom/pan/fit controls are tiny and low-contrast; navigation affordances are nearly invisible",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "S",
+          "location": "Iran War canvas bottom-center controls (03-iranwar-canvas-desktop.png, bottom strip)",
+          "evidence": "The only navigation controls — back/forward arrows '<' '>', zoom '+' '-', and a fit/frame icon — sit in a faint, ghosted cluster in the bottom-center of the canvas, rendered in light grey at small size and partially occluded by the card row above them. On a 295-event wall where panning/zooming is the ONLY way to read anything, these controls are the most important UI on screen yet they're the least visible. There is no labeled 'Fit all' / 'Zoom to fit' button and no keyboard hint.",
+          "recommendation": "Promote the canvas controls to a solid, high-contrast control bar (or a vertical control stack on the right) with clear icons and tooltips: Zoom in/out, Fit all, and prev/next event. Since panning/zooming is mandatory to use the canvas at all, these must be unmissable — not ghosted. Pair with a visible keyboard-shortcut hint."
+        },
+        {
+          "title": "Dark-mode canvas reads as a generic theme, not a designed surface — low card/background separation",
+          "severity": "low",
+          "impact": "low",
+          "effort": "S",
+          "location": "French Revolution canvas dark (10-frenchrev-canvas-dark.png)",
+          "evidence": "In dark mode the event cards are near-black rounded pills on a near-black (#1a1a1a-ish) background, separated only by a thin subtle border. Card-to-background contrast is weak, so the field of cards reads as low-definition dark-grey-on-dark. Text contrast is acceptable, but there is no accent, elevation, or category color carried onto the card in dark mode (the colored category dots from Stream View are absent on canvas cards). It looks like an automatic inverted theme rather than a deliberately designed dark experience.",
+          "recommendation": "In dark mode, lift card surfaces to a clearly lighter elevation (e.g. #232328) with a subtle shadow or stronger border, and carry the Stream View category dot/color onto canvas cards for at-a-glance grouping. Small lift, meaningful polish gain for a relaunch."
+        }
+      ]
+    },
+    {
+      "key": "ia-navigation-flows",
+      "label": "IA, Navigation & Visitor Flow",
+      "dimension": "Information architecture, navigation, discovery, and first-time-visitor journey (anonymous)",
+      "maturityScore": 3,
+      "summary": "The visitor funnel is fundamentally leaky and inconsistent. The landing page sets a credible tone but hands off to an app shell with a completely different navigation model (top \"Browse/Sign In\" bar on marketing pages vs. an unlabeled icon-only left sidebar in the app), so the moment a visitor crosses from / into /browse or a timeline, the wayfinding system silently changes. Discovery is actively undermined: the Browse page's first major widget, \"Platform Statistics,\" shows obviously-false numbers (2 timelines / 465 events / 0 users / blank views) that contradict the profile page (8 / 836 / 302) — a trust-killer placed exactly where a curious visitor is deciding whether this is a real product. The payoff at the end of the funnel is broken twice: the deep-link redirect bug bounces most shared/bookmarked timeline links to the homepage (killing the share-and-grow loop the Iran War timeline depends on), and even when a timeline loads, the default desktop view is an unreadable wall of truncated title-chips on a degenerate \"2026…2026\" axis, while the genuinely readable Stream View is buried in a non-shareable modal with text-overlap rendering bugs. For a relaunch aiming to grow via a current-events timeline, the discovery-to-comprehension-to-share path drops the visitor at nearly every stage.",
+      "findings": [
+        {
+          "title": "Navigation model silently swaps between marketing site and app (top-nav vs. unlabeled icon sidebar)",
+          "severity": "high",
+          "impact": "high",
+          "effort": "M",
+          "location": "01-landing-desktop.png (top bar: 'Browse' + 'Sign In'); 02-browse-desktop.png + 07-profile-desktop.png + 03-iranwar-canvas-desktop.png (left icon-only sidebar)",
+          "evidence": "On the landing page the only navigation is a top bar with text links 'Browse' and a 'Sign In' button. The instant the visitor enters /browse, /cynacons, or a timeline, that top 'Browse' link disappears and is replaced by a vertical left sidebar of three unlabeled icons (logo/home, a compass, a person) plus a bare 'Sign In' in the top-right. The two systems never coexist, the sidebar icons have no text labels, and a compass icon is a non-obvious metaphor for 'Browse'. A first-time visitor has to relearn the nav after a single click.",
+          "recommendation": "Pick ONE primary navigation model and use it on every route. Either keep the labeled top bar everywhere (Browse, Sign In, plus a 'Create' CTA), or if the icon sidebar is the app's nav, add text labels (or persistent tooltips) and show it on the landing page too. At minimum, label the sidebar icons and keep a visible 'Browse' affordance on in-app pages so the path back to discovery is never lost."
+        },
+        {
+          "title": "Broken 'Platform Statistics' widget destroys credibility at the top of the discovery page",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "S",
+          "location": "02-browse-desktop.png — 'Platform Statistics' row (2 Timelines / 465 Events / 0 Users / blank Total Views)",
+          "evidence": "The Browse page — the main discovery surface for an anonymous visitor — prominently shows 'Platform Statistics: 2 Timelines, 465 Events, 0 Users' with the 'Total Views' card showing no number at all. These are flatly contradicted by the same site: the Popular grid right above lists at least 6 timelines, and the profile page (07-profile-desktop.png) states '8 Timelines, 836 Events, 302 Views'. '0 Users' on a platform you are visiting is self-evidently false. A visitor evaluating whether this is a serious, populated product sees a metrics widget that is visibly wrong.",
+          "recommendation": "Fix the stats cloud function so the numbers are correct and self-consistent (8 timelines / 836 events / 1 user / 302 views), or remove the widget entirely until it is reliable. A discovery page should never lead with provably-false numbers — for a relaunch, '0 Users' and a blank views card read as 'abandoned/broken'."
+        },
+        {
+          "title": "Deep-link redirect bug breaks the entire share-and-grow loop the relaunch depends on",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "M",
+          "location": "Funnel exit (per RECON #1); affects every shareable timeline URL except French Revolution and Iran War. Share affordance visible in 03-iranwar-canvas-desktop.png (circular share icon, top-right)",
+          "evidence": "Per RECON (reproduced in a cold context): direct navigation to most timelines (RFK, Napoleon, JFK confirmed) redirects to the homepage instead of rendering the timeline. The canvas exposes a share button (top-right circular icon, 03-iranwar-canvas-desktop.png), so the product invites sharing — but a recipient who clicks a shared link lands on the marketing homepage with no indication of what they were meant to see. This nullifies social sharing, SEO crawling, bookmarks, and embeds for most of the catalog: the exact channels a 'grow via the Iran War timeline' strategy relies on. The visitor journey doesn't 'drop off' here — it dead-ends and silently restarts at /.",
+          "recommendation": "Resolve the timeline route by fetching {username, id} directly from Firestore on cold load instead of looking it up in a preloaded 'popular' list and redirecting home on miss. Every public timeline URL must render its timeline on first paint regardless of view count. Until fixed, treat all share/embed features as effectively non-functional for the long tail."
+        },
+        {
+          "title": "Default timeline view is unreadable; the genuinely readable mode is a non-shareable modal with rendering bugs",
+          "severity": "high",
+          "impact": "high",
+          "effort": "L",
+          "location": "03-iranwar-canvas-desktop.png (canvas: '2026…2026' axis, truncated title chips) vs. 04-iranwar-streamview-desktop.png (Stream View modal — readable but overlapping text)",
+          "evidence": "Opening The Iran War on desktop defaults to the canvas: a degenerate time axis labeled '2026 … 2026' (all 295 events in one year, so the axis conveys nothing) covered in title-only chips truncated mid-phrase ('US-Israeli Airstrikes Hit Iranian-…', 'IDF: Over 10,000 munitions…'). The actually readable experience — full descriptions, dates, source counts, 'Show more' — lives in the Stream View modal (04), but it is a floating overlay above the blurred canvas: it cannot be deep-linked, shared, or indexed, and it visibly renders broken, with the 'Mar 1 / 2026' date rail labels overlapping event titles and the 'Show more' link. So the first-time visitor's payoff moment is either an unreadable wall or a buggy modal dead-end.",
+          "recommendation": "Make Stream View (or a clean reading view) the default, shareable, deep-linkable route for current-events / single-year timelines — not a modal. Fix the date-rail/title text overlap in Stream View. For dense single-year timelines, replace the useless 'year…year' axis with month/week segmentation, and add a guided entry (summary + 'key moments' filter) so a curious reader isn't dumped into 295 raw chips."
+        },
+        {
+          "title": "Discovery surfaces bury the growth-driver and expose editing controls to anonymous visitors",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "S",
+          "location": "02-browse-desktop.png — 'Popular Timelines' grid (Iran War is the 4th card, '9 views') and the ⋮ kebab menu on every card",
+          "evidence": "The relaunch's stated growth driver, The Iran War (295 events, current events), appears as the 4th 'Popular' card with only '9 views', placed after a 100-event 'Janus Cosmological Model' — because ordering is purely by view count, the newest/most strategic timeline is the least visible. Separately, every Browse card and the profile cards render a three-dot kebab menu (⋮), an edit/manage affordance, even though the visitor is anonymous and read-only (the timeline view itself shows a lock icon in the sidebar). This adds clutter and implies actions the visitor can't take.",
+          "recommendation": "Add a curated/featured slot (or a 'Current Events' / 'Trending now' rail) so the Iran War timeline gets prominence independent of raw views; don't let 'Popular = highest historical view count' bury the timeline you're trying to launch. Hide or suppress the per-card ⋮ menu for anonymous users — owners see manage controls, visitors see only 'Open'."
+        },
+        {
+          "title": "Conversion to sign-up is weak: invisible secondary CTA, no creation path for first-timers, near-empty footer nav",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "S",
+          "location": "01-landing-desktop.png — hero CTAs ('Explore Public Timelines' bright orange vs. a dark-on-dark 'Sign Up' ghost button); bottom 'Ready to connect the dots?' section with a single 'View All Timelines' button; footer 'Product' column",
+          "evidence": "The hero pairs a bright orange 'Explore Public Timelines' button with a 'Sign Up' button rendered as dark text on the dark hero background — it is almost illegible, so the only discoverable action is browsing. The closing CTA section promises 'Create your first timeline in minutes' but the only button is 'View All Timelines' — there is no 'Create' / 'Start free' action anywhere on the landing page despite the copy. The footer 'Product' column contains a single link, 'Browse Timelines', leaving a lone link floating in an otherwise empty column. The result is a funnel optimized only for passive browsing, with no clear, visible path to the account-creation step that growth requires.",
+          "recommendation": "Give the sign-up/create CTA real contrast and a real destination in the hero; make the closing 'Ready to connect the dots?' button actually start creation ('Create your first timeline') rather than re-routing to Browse. Populate or remove the empty footer 'Product' column. Provide one obvious, high-contrast conversion CTA per section so the visitor always knows the next step."
+        }
+      ]
+    },
+    {
+      "key": "content-copy-positioning",
+      "label": "Content, Copy & Positioning",
+      "dimension": "Messaging, copywriting, value proposition & positioning",
+      "maturityScore": 3,
+      "summary": "The messaging reads like a competent AI-generated SaaS template, not a product with a sharp point of view. The hero headline (\"Where events become understanding\") is abstract and fails the 5-second test — a first-time visitor cannot tell this is a timeline tool, let alone one built for current events like the Iran War. Positioning is diffuse: it targets six personas at once (\"Anyone Seeking Clarity\") and leans on developer jargon (\"Fork. Merge.\", \"multi-agent orchestration\", version numbers) that means nothing to journalists or citizens. The single most damaging issue is a stale public roadmap that lists AI Integration, Sharing, and Version Control as FUTURE work when the rest of the same page (and the app at v0.8.15+) already ships them — it actively misrepresents the product as less mature than it is, the opposite of what a relaunch needs. Trust signals are weak-to-negative: a \"BETA\" badge, a personal Gmail as the only contact, \"© 2025\", and no proof points despite owning genuinely strong content (French Revolution, Iran War). The catalog is sorted by raw view count rather than curated, burying the flagship and growth-driver timelines.",
+      "findings": [
+        {
+          "title": "Stale roadmap brands shipped flagship features (AI, sharing, version control) as 'future' — actively misrepresents maturity",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "S",
+          "location": "Landing page (01-landing-desktop.png / 09-landing-dark.png) — 'Product Roadmap' section; verified via _crop_roadmap_big.png",
+          "evidence": "The roadmap marks as COMPLETED only up to 'v0.5.21-5.36 — UX Refinements & Branding', shows 'v0.5.37+ — Current: User Onboarding Experience' as the active item, and greys out as FUTURE: 'v0.6.x — Social & Sharing (Share links, follows, discovery)', 'v0.7.x — AI Integration (Chat interface, timeline Q&A, fact-checking)', and 'v0.9.x — Git-Based Version Control (fork/merge workflows)'. Yet the SAME page's hero tagline already advertises 'Fork. Merge.' and the footer says 'AI-powered', and per recon the app is v0.8.15+ with AI Chat, API, embeds and the Iran War rolling timeline all shipped. The page literally tells visitors the product is at v0.5 and hasn't built features it ships today.",
+          "recommendation": "For a relaunch, delete the version-numbered internal changelog from the marketing page entirely. Replace with a customer-facing 'What's here today' (timeline builder, AI assistant, source-linked events, sharing/embeds, current-events timelines) and a short forward-looking 'Coming next' (2-3 items max). Never expose semver or internal phase numbers to end users — they read as 'unfinished software'."
+        },
+        {
+          "title": "Hero headline fails the 5-second test — doesn't say what the product is or who it's for",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "M",
+          "location": "Landing hero (01-landing-desktop.png, 09-landing-dark.png, mobile 11-landing-mobile.png); verified via _crop_hero.png / _m_hero.png",
+          "evidence": "Headline: 'Where events become understanding'. Sub-tagline: 'Explore. Create. Visualize. Fork. Merge.' Subhead: 'Connect the dots between events, people, and decisions. Transform scattered information into shareable, explorable timelines that anyone can verify and build upon.' Nowhere in the first viewport does it concretely state the noun 'timeline tool' prominently, name a use case (current events, history, investigations), or show the product. 'Fork. Merge.' is GitHub developer jargon that is meaningless to the stated personas (journalists, citizens, students). The owner's growth thesis is current events / 'The Iran War', but the hero gives no hint of that angle.",
+          "recommendation": "Lead with a concrete, scannable promise tied to the growth strategy, e.g. 'Build and explore source-linked timelines of the news and history that matter' with a one-line proof: 'Like our 295-event timeline of the Iran War.' Cut 'Fork. Merge.' from the hero (move 'fork' into a feature section described in plain language: 'build on someone else's timeline'). Add a product screenshot/animated preview in the hero so visitors see what it is, not just abstract verbs."
+        },
+        {
+          "title": "Owns genuinely strong, timely content but uses zero of it as social proof on the landing page",
+          "severity": "high",
+          "impact": "high",
+          "effort": "M",
+          "location": "Landing page full (01/09-landing) vs. Browse (02-browse-desktop.png, _b_top.png)",
+          "evidence": "The landing page has NO featured-timeline preview, NO numbers, NO named examples — just abstract persona/feature copy and the stale roadmap. Meanwhile the browse page proves real assets exist: 'French Revolution — 234 views, 289 events', 'The Iran War — Rolling timeline tracking major events in the Iran-US conflict, 295 events', plus JFK/RFK/de Gaulle. The single most compelling, relaunch-relevant artifact (a 295-event, continuously-updated Iran War timeline) is completely absent from the marketing narrative.",
+          "recommendation": "Add a 'See it in action' band to the landing page featuring 2-3 real timelines with thumbnails and stats — lead with The Iran War (current-events hook) and French Revolution (depth/credibility). Use real counts ('289 events, fully sourced') as proof. This converts abstract claims ('written, explorable, verifiable') into demonstrable evidence and doubles as the SEO/shareable entry the growth plan needs."
+        },
+        {
+          "title": "Trust & credibility signals are weak or negative: BETA badge, personal Gmail, wrong copyright year",
+          "severity": "high",
+          "impact": "high",
+          "effort": "S",
+          "location": "Header BETA badge (02-browse-desktop.png/_b_top.png, 11-landing-mobile.png/_m_hero.png); footer (09-landing-dark.png/_crop_footer.png)",
+          "evidence": "An orange 'BETA' badge sits next to the 'PowerTimeline' logo in the header on every page. The footer's only contact is a personal address, 'cynako@gmail.com', alongside 'GitHub Repository'. Copyright reads '© 2025 PowerTimeline' (current date is 2026). The footer also exposes 'Built with PowerSpawn — AI-powered multi-agent orchestration', an internal dev-tooling reference irrelevant and confusing to end users. There are no testimonials, no usage stats, no 'as used by', no about/team — nothing that signals a credible, maintained product.",
+          "recommendation": "For relaunch: remove the BETA badge (or replace with a confident product tagline). Replace the personal Gmail with a branded address (hello@/contact@powertimeline.com) or a contact form. Fix the year to 2026 and automate it. Remove the 'Built with PowerSpawn' line from public footer. Add at least one trust element — e.g., 'X timelines, Y events, updated daily' (real numbers) or a short 'Why I built this' founder note tied to the Iran War timeline."
+        },
+        {
+          "title": "Positioning targets six personas at once, diluting the value prop to 'for everyone'",
+          "severity": "high",
+          "impact": "medium",
+          "effort": "M",
+          "location": "Landing 'Built for people who connect the dots' section (09-landing-dark.png / _crop_personas.png)",
+          "evidence": "The persona grid lists SIX audiences: 'Journalists & Investigators', 'Historians & Researchers', 'Educators & Students', 'Informed Citizens', 'Podcasters & Content Creators', and 'Anyone Seeking Clarity'. The last card literally says 'Anyone Seeking Clarity' / 'When you need to make sense of complexity' — i.e., everyone. The section header 'Built for people who connect the dots' and subhead 'Whether you're investigating, teaching, or simply trying to understand' reinforce a no-focus, all-things-to-all-people stance that gives no single visitor a sharp 'this is for me' moment.",
+          "recommendation": "Pick a beachhead persona aligned with the growth plan — current-events followers / news-literate readers and the creators who serve them (journalists, podcasters). Lead the page for that wedge, with the Iran War timeline as the hero example. Demote the other personas to a secondary 'also great for…' row. Drop the 'Anyone Seeking Clarity' catch-all card; 'for everyone' converts no one."
+        },
+        {
+          "title": "Browse catalog is sorted by raw views, burying the flagship and growth-driver timelines",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "M",
+          "location": "Browse 'Popular Timelines' row (02-browse-desktop.png / _b_top.png)",
+          "evidence": "The first 'Popular Timelines' row reads, left to right: 'French Revolution (234 views)', 'Charles de Gaulle (28 views)', 'Janus Cosmological Model (9 views)', 'The Iran War (9 views)'. So the growth-driver current-events timeline (The Iran War, 295 events) sits LAST in the row at 9 views, side by side with a niche 'Janus Cosmological Model'. Card subtitles are dry metadata ('Charles de Gaulle comprehensive timeline (1890-1970)', 'Complete chronicle of revolutionary France 1789-1799') with no hook explaining why a stranger should click.",
+          "recommendation": "Replace pure view-count sort with a curated 'Featured' rail the owner controls, leading with The Iran War and French Revolution. Rewrite card descriptions as one-line hooks ('What's actually happening in the Iran-US conflict — 295 sourced events, updated weekly') instead of catalog metadata. This makes the strongest content the first thing visitors see."
+        },
+        {
+          "title": "Hero copy is illegible in light mode and on mobile due to dark text over busy imagery",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "S",
+          "location": "Light landing hero (01-landing-desktop.png / _l_hero.png) and mobile hero (11-landing-mobile.png / _m_hero.png)",
+          "evidence": "In light mode the hero block is rendered dark-on-dark over a busy decorative background (a Spartan helmet and a US Great-Seal eagle): the subhead 'Connect the dots between events, people...' is low-contrast grey and nearly unreadable, and the secondary 'Sign In' CTA is a dark-outline button on a dark background that is barely visible next to the orange 'Explore Public Timelines'. On mobile the 'Explore. Create. Visualize. Fork. Merge.' tagline is faint orange-on-dark over a photo and essentially disappears. A faded giant 'PowerTimeline' watermark sits behind the hero, adding noise. The message that should land in 5 seconds is physically hard to read.",
+          "recommendation": "Give the hero a solid or strongly-darkened gradient backdrop so all copy hits WCAG AA contrast; drop or heavily mute the helmet/eagle decoration (it reads as generic stock and confuses the subject). Make the secondary CTA a visible ghost/white-outline button. Remove the faded 'PowerTimeline' watermark. Verify the tagline and subhead are legible in both themes and on mobile."
+        },
+        {
+          "title": "Microcopy and CTAs are generic SaaS boilerplate, not specific to a timeline/current-events product",
+          "severity": "low",
+          "impact": "medium",
+          "effort": "S",
+          "location": "Landing section headers and CTAs across 09-landing-dark.png (_crop_sub.png, _crop_tools.png, _crop_footer.png)",
+          "evidence": "Stock phrases recur throughout: 'connect the dots' appears in the personas header, footer copyright ('Built for people who connect the dots'), and final CTA ('Ready to connect the dots?'). Feature names are abstract ('Infinite Zoom', 'Fork & Improve', 'Share & Verify') and section subheads are filler ('From quick explorations to comprehensive investigations', 'Tools for serious timeline work'). The 'Product' footer column contains exactly one link ('Browse Timelines'). The narrative band 'Information is scattered. Context is lost. ... Journalists show private whiteboards. Podcasters explain connections orally.' is a textbook AI-template problem/solution structure with no concrete product specificity.",
+          "recommendation": "Replace repeated 'connect the dots' instances with varied, concrete language. Anchor feature copy to real capabilities and examples ('Zoom from 1789 to a single day', 'Build on the Iran War timeline and add your sources'). Make the final CTA outcome-specific ('Start your first timeline in minutes — or explore the Iran War timeline'). Flesh out the footer 'Product' column or remove the empty-feeling header."
+        }
+      ]
+    },
+    {
+      "key": "mobile-responsive",
+      "label": "Mobile & Responsive",
+      "dimension": "Mobile/responsive experience (390x844 phone)",
+      "maturityScore": 3,
+      "summary": "Mobile is the make-or-break surface for this product (social shares of the Iran War timeline land here), and it is the weakest dimension audited. The hero wordmark breaks out of its container, the marketing cards are mostly empty dead space, and most damning: the Stream View modal — the ONLY readable timeline view on mobile, which auto-opens for every shared visitor — is visibly broken, with time labels colliding through event titles, a truncated header, a year slider squeezed into \"2026—2026\", dual scrollbars, and a half-empty modal that doesn't fill the screen. A first-time mobile visitor arriving from a tweet about the Iran War sees a glitchy, overlapping list, not a credible product. The layout reflows to single-column adequately (browse is fine), but the flagship reading experience and the hero both look broken, which is fatal for a relaunch whose growth thesis depends on mobile social traffic.",
+      "findings": [
+        {
+          "title": "Stream View (the only mobile reading mode) has time labels colliding through event titles",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "M",
+          "location": "Mobile timeline / 13-iranwar-streamview-mobile.png + 14-iranwar-canvas-mobile.png / Stream View modal event rows",
+          "evidence": "In the auto-opened Stream View, a small grey timestamp ('23:56', '23:47', '23:50', '23:48') is rendered in the same vertical band as each event's bold title, so it overlaps and strikes through the headline text. 'Israel Carries Out Large-Scale Strikes Across Tehran' has '23:47' overprinted across the title; 'CIA Tracked Khamenei...' has '23:56' overlapping; 'Israel Warns of Forceful Response...' shows '23:50' bleeding into the heading. The 'Show more' link also sits directly on top of the next event's title (e.g. 'Show more' overlaps 'Israel Carries Out...' and 'CIA Tracked Khamenei...'). This is the FIRST thing a mobile visitor from a social share sees and it looks broken.",
+          "recommendation": "Fix the row layout so the timestamp occupies its own gutter column (it already has the date 'Mar 1 / 2026' on the left rail — move the time there too, stacked under the date). Add vertical spacing between an event's 'Show more' affordance and the next event title. Test specifically at 390px with long multi-line titles, which is the common case for the Iran War feed."
+        },
+        {
+          "title": "Stream View modal is mis-sized: truncated header, squeezed year slider, dual scrollbars, half-empty viewport",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "M",
+          "location": "Mobile timeline / 13-iranwar-streamview-mobile.png / Stream View modal chrome",
+          "evidence": "The modal header reads 'Strea' — the word 'Stream' is cut off by the toolbar. The year-range control is crammed into a strip showing '2026 [dense slider] 2026  295 events' that is partially hidden behind the truncated header. There are TWO scrollbars: a vertical one on the right AND a horizontal scrollbar across the bottom of the card list, meaning content is wider than the modal. Below the list, a large block of empty white space sits under the '295 events' footer — the modal does not fill the 844px viewport, so the content area is both too narrow (horizontal scroll) and too short (wasted bottom). The desktop Stream View (04) does not exhibit this truncation, so the modal was never properly adapted to 390px.",
+          "recommendation": "Make the mobile Stream View a full-screen sheet (100vw x 100dvh), not a centered modal: remove horizontal overflow by constraining card width to the viewport, give the header room so 'Stream View' isn't clipped, and either hide the year-range slider on mobile or move it to a dedicated filter sheet. Eliminate the horizontal scrollbar entirely."
+        },
+        {
+          "title": "Landing hero wordmark breaks out of its container and bleeds into the section below",
+          "severity": "high",
+          "impact": "high",
+          "effort": "S",
+          "location": "Landing (mobile) / 11-landing-mobile.png / hero section",
+          "evidence": "The ghosted 'PowerTimeline' background wordmark, which sits tastefully behind the headline on desktop (01-landing-desktop.png), is oversized on mobile: the letters are clipped at the left/right edges and the lower half of the wordmark spills past the dark hero band into the grey section underneath the orange 'Explore Public Timelines' CTA. The effect reads as a rendering glitch rather than a design flourish. The headline 'Where events become understanding' also wraps awkwardly with the small figure/illustration partially behind it.",
+          "recommendation": "Scale the decorative wordmark responsively (cap its width to the hero container and clip with overflow:hidden on the hero), or hide it below ~640px. Verify the hero band's height fully contains all decorative layers at 390px."
+        },
+        {
+          "title": "Marketing section cards are mostly empty dead space on mobile",
+          "severity": "high",
+          "impact": "medium",
+          "effort": "M",
+          "location": "Landing (mobile) / 11-landing-mobile.png / 'Tools for serious timeline work' and persona cards",
+          "evidence": "The three 'Tools for serious timeline work' cards become full-width dark rectangles where a tiny icon + a couple of small centered text lines float in a large field of empty grey, leaving 60-70% of each card blank. The persona cards ('Journalists & Investigators', 'Historians & Researchers', etc.) are tall dark-grey rounded blocks with very low-contrast body text that is hard to read against the grey. Because each near-empty card is full-width and full-height, the page becomes an extremely long scroll of mostly-empty boxes — the opposite of a punchy mobile landing.",
+          "recommendation": "On mobile, tighten card heights to fit content (no forced large min-height), increase body-text contrast, and consider condensing the persona list into a compact 2-up grid or a single 'Who it's for' line. Reduce overall hero-to-CTA scroll distance so the value prop and 'Explore' button are reachable without endless scrolling."
+        },
+        {
+          "title": "Every Iran War event shows the same date 'Mar 1 2026', destroying the timeline's core value on mobile",
+          "severity": "high",
+          "impact": "high",
+          "effort": "M",
+          "location": "Mobile timeline / 13-iranwar-streamview-mobile.png / left date rail",
+          "evidence": "The left rail of the Stream View repeats 'Mar 1 / 2026' for six consecutive events, and the year-range control collapses to '2026 — 2026'. For a CURRENT-EVENTS timeline whose entire premise is chronology, every entry sharing one date makes the 'timeline' indistinguishable from a generic news list. Combined with the colliding timestamps, a mobile visitor cannot tell the sequence of events apart. (This may be a data/ingestion issue rather than pure CSS, but on mobile it is the dominant visual signal because the date rail occupies a full column.)",
+          "recommendation": "Investigate why all 295 Iran War events resolve to a single date; if the source data only has times, surface meaningful relative ordering (e.g. group headers by actual day, show the time prominently). If the data is genuinely all one day, the year-slider and date rail should switch to a time-of-day axis on mobile so the rail isn't six identical 'Mar 1 2026' labels."
+        },
+        {
+          "title": "No mobile entry guidance for a 295-event timeline arriving from a social share",
+          "severity": "medium",
+          "impact": "high",
+          "effort": "M",
+          "location": "Mobile timeline / 13-iranwar-streamview-mobile.png / overall first-view experience",
+          "evidence": "A visitor who taps an Iran War share link lands directly inside the Stream View scrolled to the top of 295 events with no title card, no summary, no 'key moments' filter, and no indication of what they're looking at beyond a breadcrumb 'Home > @cynacons > The Iran War'. The footer just says '295 events'. There is no hero/summary for the timeline itself, so the social-share first impression is a raw, glitchy list rather than a framed story. Compare browse (12), which at least gives each timeline a one-line description card — that framing is absent once you're inside the timeline on mobile.",
+          "recommendation": "Add a lightweight mobile 'cover' for shared timelines: title, one-line description, event count, last-updated, and a 'Jump to latest / key moments' control before the raw list. This is the single highest-leverage change for converting Iran War social traffic."
+        },
+        {
+          "title": "Bottom-of-page contact form and repeated card stacks add length without mobile value",
+          "severity": "medium",
+          "impact": "low",
+          "effort": "S",
+          "location": "Landing (mobile) 11-landing-mobile.png footer; Browse (mobile) 12-browse-mobile.png 'Recently Edited'",
+          "evidence": "The mobile landing ends in a full contact form embedded in the footer (a heavyweight element for a marketing page, and it exposes the personal Gmail per recon). On browse-mobile, the 'Recently Edited' section re-lists the same timelines already shown under 'Popular Timelines' (The Iran War, French Revolution, Robert F. Kennedy, Charles de Gaulle all appear twice), doubling the scroll length with duplicate cards on a small screen where vertical real estate is precious.",
+          "recommendation": "On mobile, replace the inline contact form with a simple 'Contact' link/mailto and de-duplicate the browse lists (or cap 'Recently Edited' to items not already in 'Popular'). Shorter, non-repetitive pages convert better on phones."
+        },
+        {
+          "title": "Card kebab menus and stacked controls risk sub-44px tap targets on mobile",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "S",
+          "location": "Browse (mobile) 12-browse-mobile.png card headers; Stream View 13 folder/count icons",
+          "evidence": "Each browse card has a small 3-dot kebab menu tucked in the top-right corner, and Stream View rows show small folder-with-count icons ('1', '4') near the title. At 390px these icons render small and close to adjacent tappable text/cards, which suggests tap targets below the 44x44px guideline and a high mis-tap risk on the cramped cards. The modal's left/right scroll arrows at the bottom of the horizontal scrollbar are also tiny.",
+          "recommendation": "Audit all interactive icons at 390px against a 44px minimum hit area (pad the kebab and folder icons), and remove the horizontal-scroll arrow controls entirely once the modal width is fixed."
+        }
+      ]
+    },
+    {
+      "key": "a11y-technical-seo",
+      "label": "Accessibility, Technical & SEO",
+      "dimension": "Accessibility, technical hygiene & SEO/shareability",
+      "maturityScore": 3,
+      "summary": "For a product whose entire growth thesis is organic discovery (search + social sharing of a \"The Iran War\" current-events timeline), the technical SEO and shareability foundation is broken at the root. The catastrophic problem is that direct/shared links to most timelines bounce to the home page (confirmed for RFK, JFK, Napoleon) — meaning Google cannot index those pages and every shared link/embed dead-ends, so the relaunch channel is effectively non-functional for 6 of 8 timelines. On top of that, the most important on-page SEO signal (the landing page's primary section heading) is a full body sentence wrapped in an h2, heading levels are abused for visual styling throughout (h5/h6 used as card titles, an emphasis sentence rendered as a literal h5), and visible breakage erodes trust on the pages that DO load: a \"Total Views\" stat card with no number, \"0 Users / 2 Timelines / 465 Events\" platform stats that contradict reality, \"Invalid Date\" on two timelines, a collapsed \"2026 → 2026\" axis on the 295-event Iran War canvas, a stale \"© 2025\" footer, a personal Gmail as public contact, and low-contrast grey-on-grey footer/body text. This is not a polish problem; it is a \"search engines and social cards literally cannot represent this product\" problem, and it must be fixed before any relaunch.",
+      "findings": [
+        {
+          "title": "Deep-link redirect to home page makes most timeline URLs unindexable and unshareable",
+          "severity": "critical",
+          "impact": "high",
+          "effort": "M",
+          "location": "All timeline routes /{username}/timeline/{id}; documented in RECON.md §4.1; symptom visible because 03-iranwar-canvas-desktop.png is one of only two timelines that load directly",
+          "evidence": "RECON confirms (reproduced in a cold isolated browser) that direct navigation/shared links to RFK, JFK and Napoleon timelines redirect to / (landing) instead of rendering the timeline; only the two high-view 'popular' timelines (Iran War, French Revolution) deep-link correctly. The Iran War canvas in 03-iranwar-canvas-desktop.png renders only because it happens to be in the preloaded popular set. The likely cause is the route resolving the id from a preloaded popular list and bouncing home on a miss rather than fetching {username,id} directly.",
+          "recommendation": "Make the timeline route fetch the specific document by {username,id} on load (with a real 404 state, not a redirect) so every timeline has a stable, crawlable, shareable URL. This single fix is the prerequisite for the entire SEO/social growth strategy — without it, Google indexes nothing and every social/bookmark link dies. Verify with curl and a cold-cache incognito test on all 8 timelines, and confirm Googlebot (JS-rendered) reaches a 200 with the timeline content."
+        },
+        {
+          "title": "Landing page's primary section heading (h2) is a full body sentence, not a keyword phrase",
+          "severity": "high",
+          "impact": "high",
+          "effort": "S",
+          "location": "01-landing-desktop.png hero region (/tmp/crop_hero.png); src/pages/LandingPage.tsx lines 227-242",
+          "evidence": "The marketing paragraph 'Connect the dots between events, people, and decisions. Transform scattered information into shareable, explorable knowledge...' is rendered as component=\"h2\" — i.e. it is the page's top sub-heading in the document outline. The single strongest on-page SEO signal after <h1> is wasted on a three-sentence value-prop blurb instead of a searchable phrase like 'Build and share historical & current-events timelines'. Meanwhile real section titles ('Built for people who connect the dots', 'Tools for serious timeline work', 'Product Roadmap') correctly carry meaning but compete with this oversized body-text h2.",
+          "recommendation": "Demote the value-prop paragraph to a <p> (variant can stay h6 for styling, but set component=\"p\") and reserve h2 for keyword-bearing section titles. Author the h1/h2 around the terms people actually search ('Iran War timeline', 'historical timeline maker') given the stated growth plan. Quick edit, outsized SEO payoff."
+        },
+        {
+          "title": "Heading levels used for visual styling throughout, breaking document outline for SEO and screen readers",
+          "severity": "high",
+          "impact": "medium",
+          "effort": "M",
+          "location": "src/pages/LandingPage.tsx lines 357-367, 486, 515, 544, 801; persona/feature/footer cards in 01-landing-desktop.png; event-title inconsistency noted in RECON.md §4.9",
+          "evidence": "The emphasis sentence 'PowerTimeline makes complex narratives written, explorable, and verifiable.' is a variant=\"h5\" with NO component override, so it renders as a literal <h5> with no h3/h4 ancestor — a heading chosen purely for font size. Card titles use variant=\"h5\"/\"h6\" (lines 486/515/544/801) as decorative text, producing an outline that skips and repeats levels. RECON also notes event titles are <h3> on the canvas but <h6> in Stream View for the same content. Inconsistent/abused heading levels degrade both the SEO content outline and screen-reader heading navigation (a primary blind-user wayfinding mechanism).",
+          "recommendation": "Separate styling from semantics: keep MUI variant for size but always set component to the correct level (or use a plain styled element). Establish one h1, sequential h2 section titles, h3 for cards, and make an event title the same heading level in canvas and Stream View. Add an outline-linter check to CI."
+        },
+        {
+          "title": "Platform Statistics card is visibly broken: empty 'Total Views' value and figures that contradict reality",
+          "severity": "high",
+          "impact": "high",
+          "effort": "S",
+          "location": "02-browse-desktop.png Platform Statistics band (/tmp/crop_stats.png)",
+          "evidence": "The 'Total Views' stat card shows an icon and the label 'Total Views' but NO number at all — a blank metric on the public browse page. Adjacent cards read '2 Timelines', '465 Events', '0 Users', while the profile page (per RECON) correctly shows 8 timelines / 836 events / 1 user. A relaunch landing surface that publicly advertises '0 Users' and a stat with no value signals an abandoned/broken product and destroys credibility for first-time visitors arriving from search or social.",
+          "recommendation": "Either fix the stats aggregation (Cloud Function appears stale) so the numbers match reality and Total Views renders a value, or remove the Platform Statistics block entirely until it is trustworthy. Showing wrong/empty public metrics is worse than showing none. Add a fallback that hides any card whose value is null rather than rendering an empty metric."
+        },
+        {
+          "title": "'Invalid Date' and a collapsed '2026 → 2026' axis expose date-handling bugs on indexable surfaces",
+          "severity": "high",
+          "impact": "medium",
+          "effort": "M",
+          "location": "Browse/profile cards for Greenland & Janus (RECON.md §4.3); Iran War canvas axis in 03-iranwar-canvas-desktop.png top minimap (/tmp/crop_canvas_top.png)",
+          "evidence": "Two timelines render the literal string 'Invalid Date' as their last-updated label on browse and profile. Separately, the Iran War canvas minimap shows '2026' at BOTH the left and right ends of the axis for a 295-event timeline, i.e. the entire time range has collapsed to a single year/point — the spine that should show the chronological span is non-functional. Bad date strings are the kind of text that surfaces in search snippets and structured-data dates, and a flat axis undermines the core value proposition of a timeline.",
+          "recommendation": "Add defensive date parsing/formatting (never emit 'Invalid Date' — fall back to '—' or the raw stored value) and audit the date model for the affected timelines. Fix the canvas axis to compute and label the true min/max span; for current-events timelines the axis should span the real event range, not a single year. These dates also feed any Schedule/Event structured data you add for SEO, so they must be valid."
+        },
+        {
+          "title": "Dark-mode and footer color contrast likely fail WCAG AA; key footer links are barely legible",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "S",
+          "location": "01-landing-desktop.png footer (/tmp/crop_footer.png); 08-login-dark.png; dark mode generally",
+          "evidence": "In the footer, the tagline 'Where events become understanding', the 'Browse Timelines' link, and the 'Built with PowerSpawn...' line are rendered as faint grey on a dark-grey background — visibly washed out and around the AA failure threshold for body text; 'Browse Timelines' is the only product navigation link in the footer and it is among the lowest-contrast elements on the page. On the dark login (08-login-dark.png) the empty input fields are near-black on near-black with very low border contrast, making the field boundaries hard to perceive, and 'Forgot password?' is small orange text. Low contrast on navigation and form affordances harms low-vision users and conversion.",
+          "recommendation": "Run an automated contrast pass (axe/Lighthouse) on light and dark themes; raise footer secondary text and link colors to >=4.5:1, give dark-mode inputs a clearly visible border/focus ring, and ensure focus-visible outlines exist on all interactive elements (links, the green Sign in button, Google button). Treat the footer 'Browse Timelines' link as primary-navigation contrast, not muted text."
+        },
+        {
+          "title": "Stale '© 2025' footer plus personal Gmail as public contact undermine trust and brand on the relaunch page",
+          "severity": "medium",
+          "impact": "medium",
+          "effort": "S",
+          "location": "01-landing-desktop.png footer (/tmp/crop_footer.png)",
+          "evidence": "The footer reads '© 2025 PowerTimeline' (current date is 2026-06-20, so the copyright is a year stale on the very page meant to relaunch the product) and lists 'cynako@gmail.com' — a personal Gmail address — as the public Contact. A stale copyright is a classic 'abandoned site' signal that both human visitors and quality-rater-driven ranking heuristics penalize, and a personal Gmail reads as hobby-project, not credible product.",
+          "recommendation": "Make the copyright year dynamic (new Date().getFullYear()) so it never goes stale, and replace the personal Gmail with a branded address (e.g. contact@/hello@ on the domain) or a contact form. Small change, meaningful trust uplift for a relaunch."
+        },
+        {
+          "title": "Missing social/share metadata risk: shared timeline links will not render rich cards even where they load",
+          "severity": "high",
+          "impact": "high",
+          "effort": "M",
+          "location": "Timeline viewer routes (Open Graph/Twitter card + favicon manifest); manifest/favicon console error noted in RECON.md §4.7; SPA architecture per CLAUDE.md (Vite SPA)",
+          "evidence": "This is a client-rendered Vite SPA, and RECON already flags a console manifest error ('Resource size is not correct' for favicon.png). Combined with the deep-link redirect, the practical effect is that even the timelines that DO load (Iran War, French Revolution) will not present correct per-timeline Open Graph titles/descriptions/images to Facebook, X, LinkedIn, Slack, or Discord unless OG tags are server-rendered/prerendered per route — SPAs that inject meta via JS are not seen by most social crawlers. For a strategy built on sharing 'The Iran War' timeline, link previews are the single biggest organic-reach lever and are at high risk of showing a generic homepage card or nothing.",
+          "recommendation": "Implement per-route prerendered (or SSR/edge-function) Open Graph + Twitter Card meta with a unique title, description, and a generated preview image per timeline; add canonical URLs and an Event/Schedule-aware JSON-LD where dates are valid. Fix the favicon/manifest size error so PWA/share icons resolve. Verify with Facebook Sharing Debugger, the X Card Validator, and a real Slack/Discord paste of an Iran War link before relaunch."
+        }
+      ]
+    }
+  ]
+}
