@@ -394,12 +394,12 @@ export function LandingPage() {
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
           {[
-            { title: 'Journalists & Investigators', desc: 'Map complex stories with sources. Replace private whiteboards with shareable, linkable evidence.' },
-            { title: 'Historians & Researchers', desc: 'Visualize cause and effect across time. Build comprehensive narratives others can fork and improve.' },
-            { title: 'Educators & Students', desc: 'Create interactive learning materials. Explore history by zooming from decades to days.' },
-            { title: 'Informed Citizens', desc: "Understand what's happening in the world. Connect political events, decisions, and their consequences." },
-            { title: 'Podcasters & Content Creators', desc: 'Show your work visually. Let audiences explore the research behind your episodes.' },
-            { title: 'Anyone Seeking Clarity', desc: 'When you need to make sense of complexity, timelines reveal patterns that words alone cannot.' },
+            { title: 'Journalists & Investigators', icon: 'newspaper', desc: 'Map complex stories with sources. Replace private whiteboards with shareable, linkable evidence.' },
+            { title: 'Historians & Researchers', icon: 'history_edu', desc: 'Visualize cause and effect across time. Build comprehensive narratives others can fork and improve.' },
+            { title: 'Educators & Students', icon: 'school', desc: 'Create interactive learning materials. Explore history by zooming from decades to days.' },
+            { title: 'Informed Citizens', icon: 'public', desc: "Understand what's happening in the world. Connect political events, decisions, and their consequences." },
+            { title: 'Podcasters & Content Creators', icon: 'podcasts', desc: 'Show your work visually. Let audiences explore the research behind your episodes.' },
+            { title: 'Anyone Seeking Clarity', icon: 'insights', desc: 'When you need to make sense of complexity, timelines reveal patterns that words alone cannot.' },
           ].map((item, index) => (
             <Card
               key={index}
@@ -407,15 +407,31 @@ export function LandingPage() {
                 bgcolor: 'var(--card-bg)',
                 border: '1px solid var(--card-border)',
                 borderRadius: 2,
-                backdropFilter: 'blur(4px)',
-                transition: 'all 0.3s ease',
+                transition: 'all 0.2s ease',
                 '&:hover': {
                   borderColor: 'var(--page-accent)',
-                  transform: 'translateY(-2px)',
+                  transform: 'translateY(-3px)',
+                  boxShadow: '0 18px 36px -22px rgba(20,30,60,0.35)',
                 },
               }}
             >
               <CardContent sx={{ p: 3 }}>
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 2.5,
+                    bgcolor: 'rgba(91, 91, 214, 0.10)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 1.75,
+                  }}
+                >
+                  <span className="material-symbols-rounded" style={{ fontSize: '24px', color: '#5b5bd6' }}>
+                    {item.icon}
+                  </span>
+                </Box>
                 <Typography variant="h6" gutterBottom sx={{ color: 'var(--page-text-primary)', fontWeight: 600, fontSize: '1rem' }}>
                   {item.title}
                 </Typography>

@@ -44,19 +44,20 @@ export function getInitials(input: string): string {
  * Uses a predefined palette of pleasant colors
  */
 export function getUserColor(userId: string): string {
+  // "Calm Modern" — cohesive cool/calm palette, indigo-led (no loud amber/red/orange/lime)
   const colors = [
-    '#3B82F6', // blue-500
-    '#8B5CF6', // violet-500
-    '#EC4899', // pink-500
-    '#F59E0B', // amber-500
-    '#10B981', // emerald-500
-    '#06B6D4', // cyan-500
-    '#EF4444', // red-500
+    '#5B5BD6', // indigo (brand)
+    '#7C7CF0', // light indigo
     '#6366F1', // indigo-500
+    '#8B5CF6', // violet-500
+    '#0EA5E9', // sky-500
+    '#06B6D4', // cyan-500
     '#14B8A6', // teal-500
-    '#F97316', // orange-500
+    '#10B981', // emerald-500
     '#A855F7', // purple-500
-    '#84CC16', // lime-500
+    '#3B82F6', // blue-500
+    '#4F46E5', // indigo-600
+    '#0891B2', // cyan-600
   ];
 
   // Generate a consistent index from userId
