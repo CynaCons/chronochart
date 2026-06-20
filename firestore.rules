@@ -48,10 +48,14 @@ service cloud.firestore {
         // Unlisted timelines can be read by anyone with the link
         // Private timelines can only be read by the owner
         // Default to public if visibility not set (backwards compatibility)
+        // Owner can always read docs at their own path — incl. NOT-YET-EXISTING
+        // docs, so the create-time ID-uniqueness pre-check (isTimelineIdUnique)
+        // succeeds for new users instead of failing with permission-denied (G1.0).
         allow read: if !('visibility' in resource.data)
                       || resource.data.visibility == 'public'
                       || resource.data.visibility == 'unlisted'
-                      || (request.auth != null && resource.data.ownerId == request.auth.uid);
+                      || (request.auth != null && resource.data.ownerId == request.auth.uid)
+                      || (request.auth != null && request.auth.uid == userId);
 
         // Only authenticated users can create timelines
         // Timeline must be owned by the authenticated user
