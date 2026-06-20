@@ -73,8 +73,8 @@ export function TopNavBar() {
             {/* BETA Indicator */}
             <Box
               sx={{
-                bgcolor: '#f97316',
-                color: '#fff',
+                bgcolor: 'rgba(91, 91, 214, 0.12)',
+                color: '#5b5bd6',
                 px: 1,
                 py: 0.25,
                 borderRadius: 1,

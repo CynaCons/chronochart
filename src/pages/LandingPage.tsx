@@ -323,7 +323,7 @@ export function LandingPage() {
       </Box>
 
       {/* The Problem Section */}
-      <Box sx={{ bgcolor: 'rgba(26, 25, 24, 0.5)', py: 10, borderTop: '1px solid rgba(46, 44, 40, 0.5)', backdropFilter: 'blur(8px)' }}>
+      <Box sx={{ bgcolor: 'var(--page-bg-elevated)', py: 10, borderTop: '1px solid var(--page-border)' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h3"
@@ -409,8 +409,8 @@ export function LandingPage() {
             <Card
               key={index}
               sx={{
-                bgcolor: 'rgba(17, 17, 16, 0.5)',
-                border: '1px solid rgba(46, 44, 40, 0.5)',
+                bgcolor: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
                 borderRadius: 2,
                 backdropFilter: 'blur(4px)',
                 transition: 'all 0.3s ease',
@@ -434,7 +434,7 @@ export function LandingPage() {
       </Container>
 
       {/* Features Section */}
-      <Box sx={{ bgcolor: 'rgba(26, 25, 24, 0.5)', py: 10, borderTop: '1px solid rgba(46, 44, 40, 0.5)', backdropFilter: 'blur(8px)' }}>
+      <Box sx={{ bgcolor: 'var(--page-bg-elevated)', py: 10, borderTop: '1px solid var(--page-border)' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h3"
@@ -468,8 +468,8 @@ export function LandingPage() {
             <Card
               sx={{
                 flex: 1,
-                bgcolor: 'rgba(17, 17, 16, 0.5)',
-                border: '1px solid rgba(46, 44, 40, 0.5)',
+                bgcolor: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
                 borderTop: '3px solid #7c7cf0',
                 borderRadius: 2,
                 backdropFilter: 'blur(4px)',
@@ -497,8 +497,8 @@ export function LandingPage() {
             <Card
               sx={{
                 flex: 1,
-                bgcolor: 'rgba(17, 17, 16, 0.5)',
-                border: '1px solid rgba(46, 44, 40, 0.5)',
+                bgcolor: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
                 borderTop: '3px solid #06b6d4',
                 borderRadius: 2,
                 backdropFilter: 'blur(4px)',
@@ -526,8 +526,8 @@ export function LandingPage() {
             <Card
               sx={{
                 flex: 1,
-                bgcolor: 'rgba(17, 17, 16, 0.5)',
-                border: '1px solid rgba(46, 44, 40, 0.5)',
+                bgcolor: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
                 borderTop: '3px solid #34d399',
                 borderRadius: 2,
                 backdropFilter: 'blur(4px)',
@@ -593,7 +593,7 @@ export function LandingPage() {
               top: '24px',
               bottom: '24px',
               width: '2px',
-              bgcolor: '#2e2c28',
+              bgcolor: 'var(--page-border)',
             }}
           />
 
@@ -710,7 +710,7 @@ export function LandingPage() {
                     left: '11px',
                     top: '2px',
                     fontSize: 20,
-                    color: '#2e2c28',
+                    color: 'var(--page-text-secondary)',
                   }}
                 />
                 <Box>
@@ -794,7 +794,7 @@ export function LandingPage() {
       </Container>
 
       {/* Footer - Reduced prominence */}
-      <Box sx={{ bgcolor: 'rgba(17, 17, 16, 0.8)', borderTop: '1px solid rgba(46, 44, 40, 0.5)', backdropFilter: 'blur(8px)', py: 6 }}>
+      <Box sx={{ bgcolor: 'var(--page-bg-elevated)', borderTop: '1px solid var(--page-border)', py: 6 }}>
         <Container maxWidth="lg">
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={6} sx={{ mb: 4 }}>
             <Box sx={{ flex: 1 }}>
@@ -873,10 +873,10 @@ export function LandingPage() {
               display: 'block',
               fontSize: '0.8rem',
               pt: 3,
-              borderTop: '1px solid #2e2c28',
+              borderTop: '1px solid var(--page-border)',
             }}
           >
-            © 2025 PowerTimeline. Built for people who connect the dots.
+            © {new Date().getFullYear()} PowerTimeline. Built for people who connect the dots.
           </Typography>
           <Typography
             variant="caption"

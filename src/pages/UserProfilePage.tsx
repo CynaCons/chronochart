@@ -342,7 +342,7 @@ export function UserProfilePage() {
                 </span>
                 <span
                   className="px-2 py-0.5 text-xs font-bold rounded"
-                  style={{ backgroundColor: '#f97316', color: '#fff', letterSpacing: '0.05em' }}
+                  style={{ backgroundColor: 'rgba(91, 91, 214, 0.12)', color: '#5b5bd6', letterSpacing: '0.05em' }}
                 >
                   BETA
                 </span>
