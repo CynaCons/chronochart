@@ -154,10 +154,7 @@ export function LandingPage() {
           right: 0,
           bottom: 0,
           zIndex: -2,
-          backgroundImage: 'url(/assets/images/PowerTimeline_banner.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+          background: 'var(--page-bg)',
         }}
       />
       {/* Fixed Dark Overlay */}
@@ -169,7 +166,7 @@ export function LandingPage() {
           right: 0,
           bottom: 0,
           zIndex: -1,
-          background: 'linear-gradient(135deg, rgba(17, 17, 16, 0.88) 0%, rgba(22, 21, 20, 0.92) 100%)',
+          background: 'radial-gradient(110% 70% at 50% 0%, rgba(91, 91, 214, 0.07) 0%, rgba(124, 124, 240, 0.025) 40%, transparent 72%)',
         }}
       />
 
@@ -199,10 +196,8 @@ export function LandingPage() {
               fontWeight: 800,
               lineHeight: 1.1,
               mb: 2,
-              background: 'var(--gradient-hero-text)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: 'var(--page-text-primary)',
+              letterSpacing: '-0.02em',
             }}
           >
             Where events become understanding
