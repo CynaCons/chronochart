@@ -342,7 +342,14 @@ export async function addEvent(
       updatedAt: now,
     };
 
-    await setDoc(eventRef, eventDoc);
+    // Firestore rejects `undefined` field values. Optional fields left blank
+    // (e.g. `time` when the user doesn't set a time) arrive as undefined — strip
+    // them so the event can be created without a time.
+    const sanitizedEventDoc = Object.fromEntries(
+      Object.entries(eventDoc).filter(([, value]) => value !== undefined)
+    ) as EventDocument;
+
+    await setDoc(eventRef, sanitizedEventDoc);
 
     // Update timeline's eventCount and updatedAt atomically using increment
     const timelineRef = doc(db, COLLECTIONS.USERS, ownerId, COLLECTIONS.TIMELINES, timelineId);

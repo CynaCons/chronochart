@@ -965,15 +965,15 @@ export const DeterministicLayoutComponent = memo(function DeterministicLayoutCom
         // Base visual style - selected and pair-hovered handled here, external hover via CSS
         const anchorVisualStyle: CSSProperties = isAnchorSelected
           ? {
-              background: 'linear-gradient(135deg, #fcd34d 0%, #d97706 100%)',
-              borderColor: '#fbbf24',
-              boxShadow: '0 0 10px rgba(251, 191, 36, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.35)'
+              background: 'linear-gradient(135deg, #7c7cf0 0%, #4a4ac8 100%)',
+              borderColor: '#5b5bd6',
+              boxShadow: '0 0 10px rgba(91, 91, 214, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.35)'
             }
           : isAnchorPairHovered
             ? {
                 background: 'linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-primary-600) 100%)',
                 borderColor: 'var(--color-primary-400)',
-                boxShadow: '0 0 8px rgba(66, 165, 245, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                boxShadow: '0 0 8px rgba(91, 91, 214, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
               }
             : anchorSessionDecision === 'pending'
               ? sessionPendingStyle
@@ -1086,15 +1086,15 @@ export const DeterministicLayoutComponent = memo(function DeterministicLayoutCom
 
         const cardTypeClass =
           card.cardType === 'full'
-            ? 'border-l-4 border-l-blue-500 p-3'
+            ? 'border-l-4 border-l-indigo-500 p-3'
             : card.cardType === 'compact'
-            ? 'border-l-4 border-l-green-500 p-2'
-            : 'border-l-4 border-l-yellow-500 p-1';
+            ? 'border-l-4 border-l-indigo-400 p-2'
+            : 'border-l-4 border-l-indigo-300 p-1';
 
         const cardHighlightClasses = isCardSelected
-          ? 'ring-2 ring-amber-400 ring-opacity-80 outline outline-2 outline-offset-2 outline-amber-300 shadow-xl'
+          ? 'ring-2 ring-indigo-500 ring-opacity-80 outline outline-2 outline-offset-2 outline-indigo-300 shadow-xl'
           : isCardPairHovered
-          ? 'ring-2 ring-blue-400 ring-opacity-60 shadow-blue-400/30 shadow-lg'
+          ? 'ring-2 ring-indigo-400 ring-opacity-60 shadow-indigo-400/30 shadow-lg'
           : '';
 
         const sessionDecision = (card.event as Event & { _sessionDecision?: EventDecision })._sessionDecision;
@@ -1112,7 +1112,7 @@ export const DeterministicLayoutComponent = memo(function DeterministicLayoutCom
           backgroundColor: isPreviewEvent
             ? 'var(--preview-bg)'
             : isCardSelected
-            ? 'rgba(254, 243, 199, 0.45)'
+            ? 'rgba(238, 238, 251, 0.75)'
             : 'var(--color-surface)',
           borderColor: isPreviewEvent ? 'var(--preview-border)' : 'var(--color-border-primary)',
           borderStyle: isPreviewEvent ? 'dashed' : 'solid',
@@ -1120,7 +1120,7 @@ export const DeterministicLayoutComponent = memo(function DeterministicLayoutCom
           boxShadow: isPreviewEvent
             ? '0 0 16px var(--preview-glow)'
             : isCardSelected
-            ? '0 12px 24px rgba(251, 191, 36, 0.25)'
+            ? '0 12px 24px rgba(91, 91, 214, 0.22)'
             : undefined,
           color: 'var(--color-text-primary)'
         };
