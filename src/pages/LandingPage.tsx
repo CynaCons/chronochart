@@ -12,9 +12,6 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import GroupIcon from '@mui/icons-material/Group';
 import EmailIcon from '@mui/icons-material/Email';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { TopNavBar } from '../components/TopNavBar';
 import { useAuth } from '../contexts/AuthContext';
 import { getTimelineMetadata, getUser } from '../services/firestore';
@@ -566,7 +563,7 @@ export function LandingPage() {
       </Box>
 
       {/* Roadmap Section */}
-      <Container maxWidth="md" sx={{ py: 10 }}>
+      <Container maxWidth="lg" sx={{ py: 10 }}>
         <Typography
           variant="h3"
           component="h2"
@@ -578,7 +575,7 @@ export function LandingPage() {
             color: 'var(--page-text-primary)',
           }}
         >
-          Product Roadmap
+          Everything you need, already here
         </Typography>
         <Typography
           variant="body1"
@@ -587,165 +584,96 @@ export function LandingPage() {
             mb: 6,
             color: 'var(--page-text-secondary)',
             fontSize: '1.1rem',
-            maxWidth: 600,
+            maxWidth: 640,
             mx: 'auto',
           }}
         >
-          Our journey from timeline editor to collaborative knowledge platform
+          A complete toolkit for building, exploring, and sharing source-linked timelines.
         </Typography>
 
-        {/* Git-style commit visualization */}
-        <Box sx={{ position: 'relative', maxWidth: 700, mx: 'auto' }}>
-          {/* Vertical line */}
-          <Box
-            sx={{
-              position: 'absolute',
-              left: '20px',
-              top: '24px',
-              bottom: '24px',
-              width: '2px',
-              bgcolor: 'var(--page-border)',
-            }}
-          />
-
-          {/* Roadmap items */}
-          <Stack spacing={3}>
-            {/* Completed phases */}
-            {[
-              { version: 'v0.2.x', title: 'Timeline Editor & Layout Engine', desc: 'Infinite zoom, smart card layout, degradation system' },
-              { version: 'v0.3.x', title: 'Event Navigation & Authoring', desc: 'Event editor, minimap, interactive highlighting' },
-              { version: 'v0.4.x', title: 'Home Page & Timeline Management', desc: 'Discovery feeds, CRUD operations, visibility controls' },
-              { version: 'v0.5.0-5.10', title: 'Firebase Authentication & Firestore', desc: 'User accounts, cloud storage, real-time sync' },
-              { version: 'v0.5.11-5.20', title: 'Platform Polish & Admin Tools', desc: 'Dark theme, admin panel, statistics, multi-agent orchestration' },
-              { version: 'v0.5.21-5.36', title: 'UX Refinements & Branding', desc: 'Stream viewer, import/export, new branding, full-width layouts' },
-            ].map((phase, index) => (
-              <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', position: 'relative', pl: 6 }}>
-                {/* Commit dot */}
-                <CheckCircleIcon
-                  sx={{
-                    position: 'absolute',
-                    left: '11px',
-                    top: '2px',
-                    fontSize: 20,
-                    color: '#3fb950',
-                  }}
-                />
-                <Box>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: 'var(--page-text-primary)',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      mb: 0.5,
-                    }}
-                  >
-                    {phase.version} - {phase.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: 'var(--page-text-secondary)',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    {phase.desc}
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-
-            {/* Current phase */}
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', position: 'relative', pl: 6 }}>
-              <FiberManualRecordIcon
-                sx={{
-                  position: 'absolute',
-                  left: '11px',
-                  top: '2px',
-                  fontSize: 20,
-                  color: '#5b5bd6',
-                  animation: 'pulse 2s ease-in-out infinite',
-                  '@keyframes pulse': {
-                    '0%, 100%': { opacity: 1 },
-                    '50%': { opacity: 0.5 },
-                  },
-                  '@media (prefers-reduced-motion: reduce)': {
-                    animation: 'none',
-                  },
-                }}
-              />
+        {/* What's here today */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2.5, mb: 8 }}>
+          {[
+            { icon: 'timeline', title: 'Visual timeline builder', desc: 'Infinite-zoom canvas, from centuries to a single day.' },
+            { icon: 'smart_toy', title: 'AI assistant', desc: 'Draft and expand timelines with an AI that cites sources.' },
+            { icon: 'link', title: 'Source-linked events', desc: 'Every event can carry its sources for verification.' },
+            { icon: 'view_stream', title: 'Readable Stream view', desc: 'A clean chronological reading mode for any timeline.' },
+            { icon: 'share', title: 'Sharing & embeds', desc: 'Share a link or embed a timeline anywhere.' },
+            { icon: 'sync_alt', title: 'Import & export', desc: 'Move timelines in and out as portable YAML.' },
+            { icon: 'bolt', title: 'Live current events', desc: 'Rolling, continuously-updated timelines like the Iran War.' },
+            { icon: 'api', title: 'Automation API', desc: 'Add events programmatically via a token-auth REST API.' },
+          ].map((f, i) => (
+            <Box
+              key={i}
+              sx={{
+                bgcolor: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
+                borderRadius: 2.5,
+                p: 2.5,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  borderColor: 'var(--page-accent)',
+                  transform: 'translateY(-3px)',
+                  boxShadow: '0 18px 36px -22px rgba(20,30,60,0.35)',
+                },
+              }}
+            >
               <Box
                 sx={{
-                  bgcolor: 'rgba(91, 91, 214, 0.08)',
-                  border: '1px solid rgba(91, 91, 214, 0.28)',
+                  width: 40,
+                  height: 40,
                   borderRadius: 2,
-                  p: 2,
-                  flex: 1,
+                  bgcolor: 'rgba(91, 91, 214, 0.10)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mb: 1.5,
                 }}
               >
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: '#5b5bd6',
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    mb: 0.5,
-                  }}
-                >
-                  v0.5.37+ - Current: User Onboarding Experience
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'var(--page-text-secondary)',
-                    fontSize: '0.9rem',
-                  }}
-                >
-                  Empty states, timeline templates, guided tour, first-run experience
-                </Typography>
+                <span className="material-symbols-rounded" style={{ fontSize: '22px', color: '#5b5bd6' }}>
+                  {f.icon}
+                </span>
               </Box>
+              <Typography variant="subtitle1" sx={{ color: 'var(--page-text-primary)', fontWeight: 600, fontSize: '0.95rem', mb: 0.5 }}>
+                {f.title}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'var(--page-text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                {f.desc}
+              </Typography>
             </Box>
+          ))}
+        </Box>
 
-            {/* Upcoming phases */}
+        {/* Coming next */}
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="overline" sx={{ color: 'var(--page-accent)', fontWeight: 700, letterSpacing: '0.08em' }}>
+            Coming next
+          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center" sx={{ mt: 2 }}>
             {[
-              { version: 'v0.6.x', title: 'Social & Sharing', desc: 'Share links, follows, discovery, activity feeds' },
-              { version: 'v0.7.x', title: 'AI Integration', desc: 'Chat interface, timeline Q&A, auto-suggestions, fact-checking' },
-              { version: 'v0.8.x', title: 'Rich Media & Archival', desc: 'Image/video uploads, link previews, web page snapshots' },
-              { version: 'v0.9.x', title: 'Git-Based Version Control', desc: 'Timeline history, fork/merge workflows, attribution' },
-              { version: 'v1.0.0', title: 'Full Platform Launch', desc: 'Complete collaborative knowledge platform with all core features' },
-            ].map((phase, index) => (
-              <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', position: 'relative', pl: 6, opacity: 0.6 }}>
-                <RadioButtonUncheckedIcon
-                  sx={{
-                    position: 'absolute',
-                    left: '11px',
-                    top: '2px',
-                    fontSize: 20,
-                    color: 'var(--page-text-secondary)',
-                  }}
-                />
-                <Box>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: 'var(--page-text-secondary)',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      mb: 0.5,
-                    }}
-                  >
-                    {phase.version} - {phase.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: '#71717a',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    {phase.desc}
-                  </Typography>
-                </Box>
+              { icon: 'account_tree', label: 'Version history & fork / merge' },
+              { icon: 'image', label: 'Rich media & link previews' },
+              { icon: 'travel_explore', label: 'Better discovery & follows' },
+            ].map((c, i) => (
+              <Box
+                key={i}
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  bgcolor: 'var(--page-bg-elevated)',
+                  border: '1px solid var(--page-border)',
+                  borderRadius: 999,
+                  px: 2,
+                  py: 1,
+                }}
+              >
+                <span className="material-symbols-rounded" style={{ fontSize: '18px', color: 'var(--page-text-secondary)' }}>
+                  {c.icon}
+                </span>
+                <Typography variant="body2" sx={{ color: 'var(--page-text-secondary)', fontWeight: 500 }}>
+                  {c.label}
+                </Typography>
               </Box>
             ))}
           </Stack>
