@@ -555,10 +555,12 @@ export function UserProfilePage() {
                     <span>{timeline.eventCount} events</span>
                     <span>{formatDateSafe(timeline.updatedAt)}</span>
                   </div>
-                  {/* Owner badge - absolutely positioned at bottom-left */}
+                  {/* Owner badge - absolutely positioned at bottom-left.
+                      Hidden when the timeline's owner is the profile being viewed
+                      (redundant — the username is already in the page header). */}
                   {(() => {
                     const owner = userCache.get(timeline.ownerId);
-                    return owner ? (
+                    return owner && timeline.ownerId !== user?.id ? (
                       <div className="absolute bottom-2 left-2" title={`Owner: @${owner.username}`}>
                         <span
                           className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
