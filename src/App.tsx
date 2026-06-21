@@ -1403,7 +1403,7 @@ function AppContent({ timelineId, readOnly = false, embed = false, initialStream
               {/* Timeline minimap positioned fixed to ensure proper z-index layering above overlays */}
               {!loadError && mergedEvents.length > 0 && (
                 <div className={`fixed top-1 left-20 right-4 pointer-events-auto ${streamViewerOpen ? 'z-[1400] max-md:hidden' : 'z-[50]'}`} data-tour="minimap" data-testid="minimap-container">
-                  <Suspense fallback={<div className="h-8 bg-gray-200 rounded animate-pulse"></div>}>
+                  <Suspense fallback={<div className="h-8 rounded animate-pulse" style={{ backgroundColor: 'var(--page-bg-elevated)' }}></div>}>
                     <TimelineMinimap
                       events={mergedEvents}
                       viewStart={viewStart}
