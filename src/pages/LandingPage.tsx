@@ -748,7 +748,7 @@ export function LandingPage() {
               <Typography variant="subtitle2" gutterBottom sx={{ color: 'var(--page-text-secondary)', fontSize: '0.85rem', mb: 1.5 }}>
                 Product
               </Typography>
-              <Stack spacing={0.5}>
+              <Stack spacing={0.5} alignItems="flex-start">
                 <Button
                   size="small"
                   onClick={handleBrowseTimelines}
@@ -757,10 +757,27 @@ export function LandingPage() {
                     justifyContent: 'flex-start',
                     textTransform: 'none',
                     fontSize: '0.85rem',
-                    '&:hover': { color: 'var(--page-text-primary)' },
+                    minWidth: 0,
+                    px: 0,
+                    '&:hover': { color: 'var(--page-text-primary)', background: 'transparent' },
                   }}
                 >
                   Browse Timelines
+                </Button>
+                <Button
+                  size="small"
+                  onClick={handleCreateTimeline}
+                  sx={{
+                    color: 'var(--page-text-secondary)',
+                    justifyContent: 'flex-start',
+                    textTransform: 'none',
+                    fontSize: '0.85rem',
+                    minWidth: 0,
+                    px: 0,
+                    '&:hover': { color: 'var(--page-text-primary)', background: 'transparent' },
+                  }}
+                >
+                  {user ? 'Create a timeline' : 'Sign in'}
                 </Button>
               </Stack>
             </Box>
@@ -782,7 +799,7 @@ export function LandingPage() {
                   }}
                 >
                   <EmailIcon sx={{ fontSize: 18 }} />
-                  cynako@gmail.com
+                  Email us
                 </Link>
                 <Link
                   href="https://github.com/CynaCons/powertimeline"
@@ -816,27 +833,6 @@ export function LandingPage() {
             }}
           >
             © {new Date().getFullYear()} PowerTimeline. Built for people who connect the dots.
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: '#484f58',
-              textAlign: 'center',
-              display: 'block',
-              fontSize: '0.75rem',
-              mt: 1,
-            }}
-          >
-            Built with{' '}
-            <Link
-              href="https://github.com/CynaCons/PowerSpawn"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ color: '#71717a', '&:hover': { color: 'var(--page-accent)' } }}
-            >
-              PowerSpawn
-            </Link>
-            {' '}— AI-powered multi-agent orchestration
           </Typography>
         </Container>
       </Box>
