@@ -1464,6 +1464,48 @@ function AppContent({ timelineId, readOnly = false, embed = false, initialStream
                 />
               </ErrorBoundary>
 
+              {/* Empty-state guidance for owners of a 0-event timeline (G6.5).
+                  Presentational overlay only — does not affect layout/positioning.
+                  pointer-events pass through the container so panning still works. */}
+              {!isReadOnly && events.length === 0 && (
+                <div
+                  data-testid="editor-empty-state"
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  style={{ zIndex: 15 }}
+                >
+                  <div className="pointer-events-auto text-center px-6" style={{ maxWidth: 360, transform: 'translateY(-8%)' }}>
+                    <div
+                      className="mx-auto mb-4 flex items-center justify-center"
+                      style={{ width: 64, height: 64, borderRadius: 18, background: 'rgba(91,91,214,0.10)' }}
+                    >
+                      <span className="material-symbols-rounded" style={{ fontSize: 34, color: '#5b5bd6' }}>timeline</span>
+                    </div>
+                    <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--page-text-primary)', letterSpacing: '-0.01em' }}>
+                      Your timeline is empty
+                    </h2>
+                    <p className="text-sm mb-5" style={{ color: 'var(--page-text-secondary)' }}>
+                      Add your first event to start building the story.
+                    </p>
+                    <button
+                      onClick={openCreate}
+                      data-testid="empty-state-add-event"
+                      className="inline-flex items-center gap-2 font-semibold rounded-xl px-5 py-2.5 text-white transition-colors"
+                      style={{ background: '#5b5bd6', boxShadow: '0 6px 18px -6px rgba(91,91,214,0.5)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#4a4ac8')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = '#5b5bd6')}
+                    >
+                      <span className="material-symbols-rounded" style={{ fontSize: 20 }}>add</span>
+                      Add your first event
+                    </button>
+                    <div className="mt-3">
+                      <button onClick={openImportExport} className="text-sm font-medium" style={{ color: 'var(--page-accent)' }}>
+                        or import a timeline
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Timeline selection overlay */}
               {timelineSelection?.isSelecting && (
                 <div
