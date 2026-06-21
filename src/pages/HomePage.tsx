@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { browseUrl, OG_IMAGE_URL } from '../utils/urls';
 import { webSiteSchema } from '../utils/jsonLd';
+import { formatDateSafe } from '../lib/time';
 import type { TimelineMetadata, User } from '../types';
 import {
   getTimeline,
@@ -816,7 +817,7 @@ function HomePageContent() {
                     </p>
                     <div className="flex items-center justify-between text-sm mt-auto pb-8" style={{ color: 'var(--page-text-secondary)' }}>
                       <span>{timeline.eventCount} events</span>
-                      <span>{new Date(timeline.updatedAt).toLocaleDateString()}</span>
+                      <span>{formatDateSafe(timeline.updatedAt)}</span>
                     </div>
                     {/* Visibility badge - absolutely positioned at bottom-right */}
                     <div className="absolute bottom-2 right-2">
@@ -1019,7 +1020,7 @@ function HomePageContent() {
                   </p>
                   <div className="flex items-center justify-between text-sm mt-auto pb-8" style={{ color: 'var(--page-text-secondary)' }}>
                     <span>{timeline.eventCount} events</span>
-                    <span>{new Date(timeline.updatedAt).toLocaleDateString()}</span>
+                    <span>{formatDateSafe(timeline.updatedAt)}</span>
                   </div>
                   {/* Owner badge - absolutely positioned at bottom-left */}
                   {timeline.ownerUsername ? (

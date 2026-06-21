@@ -41,7 +41,7 @@ export function TopNavBar() {
           <Box
             component="button"
             type="button"
-            aria-label="Go to home"
+            aria-label="PowerTimeline, go to home"
             sx={{
               display: 'flex',
               alignItems: 'center',
@@ -62,6 +62,7 @@ export function TopNavBar() {
             <span className="material-symbols-rounded" style={{ color: 'var(--page-accent)', fontSize: '28px' }}>timeline</span>
             <Typography
               variant="h6"
+              component="span"
               sx={{
                 color: 'var(--page-text-primary)',
                 fontWeight: 700,

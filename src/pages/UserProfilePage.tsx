@@ -10,6 +10,7 @@ import type { TimelineMetadata, User } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { signOutUser } from '../services/auth';
 import { getUser, getUserByUsername, getTimelines, getTimeline } from '../services/firestore';
+import { formatDateSafe } from '../lib/time';
 import { downloadTimelineAsYaml } from '../services/timelineImportExport';
 import { NavigationRail, ThemeToggleButton } from '../components/NavigationRail';
 import { BottomNavigation } from '../components/BottomNavigation';
@@ -409,7 +410,7 @@ export function UserProfilePage() {
                     </div>
                   </div>
                   <div className="mt-2 text-sm" style={{ color: 'var(--page-text-secondary)' }}>
-                    Joined {new Date(user.createdAt).toLocaleDateString()}
+                    Joined {formatDateSafe(user.createdAt)}
                   </div>
                 </div>
               </div>
@@ -552,7 +553,7 @@ export function UserProfilePage() {
                   </p>
                   <div className="flex items-center justify-between text-sm mt-auto pb-8" style={{ color: 'var(--page-text-secondary)' }}>
                     <span>{timeline.eventCount} events</span>
-                    <span>{new Date(timeline.updatedAt).toLocaleDateString()}</span>
+                    <span>{formatDateSafe(timeline.updatedAt)}</span>
                   </div>
                   {/* Owner badge - absolutely positioned at bottom-left */}
                   {(() => {
