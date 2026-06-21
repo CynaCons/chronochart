@@ -12,9 +12,6 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import GroupIcon from '@mui/icons-material/Group';
 import EmailIcon from '@mui/icons-material/Email';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { TopNavBar } from '../components/TopNavBar';
 import { useAuth } from '../contexts/AuthContext';
 import { getTimelineMetadata, getUser } from '../services/firestore';
@@ -154,10 +151,7 @@ export function LandingPage() {
           right: 0,
           bottom: 0,
           zIndex: -2,
-          backgroundImage: 'url(/assets/images/PowerTimeline_banner.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+          background: 'var(--page-bg)',
         }}
       />
       {/* Fixed Dark Overlay */}
@@ -169,7 +163,7 @@ export function LandingPage() {
           right: 0,
           bottom: 0,
           zIndex: -1,
-          background: 'linear-gradient(135deg, rgba(17, 17, 16, 0.88) 0%, rgba(22, 21, 20, 0.92) 100%)',
+          background: 'radial-gradient(110% 70% at 50% 0%, rgba(91, 91, 214, 0.07) 0%, rgba(124, 124, 240, 0.025) 40%, transparent 72%)',
         }}
       />
 
@@ -199,10 +193,8 @@ export function LandingPage() {
               fontWeight: 800,
               lineHeight: 1.1,
               mb: 2,
-              background: 'var(--gradient-hero-text)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: 'var(--page-text-primary)',
+              letterSpacing: '-0.02em',
             }}
           >
             Where events become understanding
@@ -254,7 +246,7 @@ export function LandingPage() {
               onClick={handleBrowseTimelines}
               data-testid="cta-explore-examples"
               sx={{
-                bgcolor: '#f97316',
+                bgcolor: '#5b5bd6',
                 color: '#fff',
                 fontSize: '1.1rem',
                 px: 5,
@@ -264,8 +256,8 @@ export function LandingPage() {
                 fontWeight: 600,
                 boxShadow: 'var(--shadow-cta-glow)',
                 '&:hover': {
-                  bgcolor: '#ea580c',
-                  boxShadow: '0 6px 20px rgba(249, 115, 22, 0.5)',
+                  bgcolor: '#4a4ac8',
+                  boxShadow: '0 6px 20px rgba(91, 91, 214, 0.5)',
                 },
               }}
             >
@@ -287,7 +279,7 @@ export function LandingPage() {
                 fontWeight: 600,
                 '&:hover': {
                   borderColor: 'var(--page-accent)',
-                  bgcolor: 'rgba(226, 163, 54, 0.1)',
+                  bgcolor: 'rgba(91, 91, 214, 0.08)',
                 },
               }}
             >
@@ -323,7 +315,7 @@ export function LandingPage() {
       </Box>
 
       {/* The Problem Section */}
-      <Box sx={{ bgcolor: 'rgba(26, 25, 24, 0.5)', py: 10, borderTop: '1px solid rgba(46, 44, 40, 0.5)', backdropFilter: 'blur(8px)' }}>
+      <Box sx={{ bgcolor: 'var(--page-bg-elevated)', py: 10, borderTop: '1px solid var(--page-border)' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h3"
@@ -399,28 +391,44 @@ export function LandingPage() {
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
           {[
-            { title: 'Journalists & Investigators', desc: 'Map complex stories with sources. Replace private whiteboards with shareable, linkable evidence.' },
-            { title: 'Historians & Researchers', desc: 'Visualize cause and effect across time. Build comprehensive narratives others can fork and improve.' },
-            { title: 'Educators & Students', desc: 'Create interactive learning materials. Explore history by zooming from decades to days.' },
-            { title: 'Informed Citizens', desc: "Understand what's happening in the world. Connect political events, decisions, and their consequences." },
-            { title: 'Podcasters & Content Creators', desc: 'Show your work visually. Let audiences explore the research behind your episodes.' },
-            { title: 'Anyone Seeking Clarity', desc: 'When you need to make sense of complexity, timelines reveal patterns that words alone cannot.' },
+            { title: 'Journalists & Investigators', icon: 'newspaper', desc: 'Map complex stories with sources. Replace private whiteboards with shareable, linkable evidence.' },
+            { title: 'Historians & Researchers', icon: 'history_edu', desc: 'Visualize cause and effect across time. Build comprehensive narratives others can fork and improve.' },
+            { title: 'Educators & Students', icon: 'school', desc: 'Create interactive learning materials. Explore history by zooming from decades to days.' },
+            { title: 'Informed Citizens', icon: 'public', desc: "Understand what's happening in the world. Connect political events, decisions, and their consequences." },
+            { title: 'Podcasters & Content Creators', icon: 'podcasts', desc: 'Show your work visually. Let audiences explore the research behind your episodes.' },
+            { title: 'Anyone Seeking Clarity', icon: 'insights', desc: 'When you need to make sense of complexity, timelines reveal patterns that words alone cannot.' },
           ].map((item, index) => (
             <Card
               key={index}
               sx={{
-                bgcolor: 'rgba(17, 17, 16, 0.5)',
-                border: '1px solid rgba(46, 44, 40, 0.5)',
+                bgcolor: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
                 borderRadius: 2,
-                backdropFilter: 'blur(4px)',
-                transition: 'all 0.3s ease',
+                transition: 'all 0.2s ease',
                 '&:hover': {
                   borderColor: 'var(--page-accent)',
-                  transform: 'translateY(-2px)',
+                  transform: 'translateY(-3px)',
+                  boxShadow: '0 18px 36px -22px rgba(20,30,60,0.35)',
                 },
               }}
             >
               <CardContent sx={{ p: 3 }}>
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 2.5,
+                    bgcolor: 'rgba(91, 91, 214, 0.10)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 1.75,
+                  }}
+                >
+                  <span className="material-symbols-rounded" style={{ fontSize: '24px', color: '#5b5bd6' }}>
+                    {item.icon}
+                  </span>
+                </Box>
                 <Typography variant="h6" gutterBottom sx={{ color: 'var(--page-text-primary)', fontWeight: 600, fontSize: '1rem' }}>
                   {item.title}
                 </Typography>
@@ -434,7 +442,7 @@ export function LandingPage() {
       </Container>
 
       {/* Features Section */}
-      <Box sx={{ bgcolor: 'rgba(26, 25, 24, 0.5)', py: 10, borderTop: '1px solid rgba(46, 44, 40, 0.5)', backdropFilter: 'blur(8px)' }}>
+      <Box sx={{ bgcolor: 'var(--page-bg-elevated)', py: 10, borderTop: '1px solid var(--page-border)' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h3"
@@ -468,21 +476,21 @@ export function LandingPage() {
             <Card
               sx={{
                 flex: 1,
-                bgcolor: 'rgba(17, 17, 16, 0.5)',
-                border: '1px solid rgba(46, 44, 40, 0.5)',
-                borderTop: '3px solid #e2a336',
+                bgcolor: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
+                borderTop: '3px solid #7c7cf0',
                 borderRadius: 2,
                 backdropFilter: 'blur(4px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: '#e2a336',
+                  borderColor: '#7c7cf0',
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 24px rgba(226, 163, 54, 0.2)',
+                  boxShadow: '0 8px 24px rgba(124, 124, 240, 0.2)',
                 },
               }}
             >
               <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <TimelineIcon sx={{ fontSize: 56, color: '#e2a336', mb: 2 }} />
+                <TimelineIcon sx={{ fontSize: 56, color: '#7c7cf0', mb: 2 }} />
                 <Typography variant="h5" gutterBottom sx={{ color: 'var(--page-text-primary)', fontWeight: 600, mb: 2 }}>
                   Infinite Zoom
                 </Typography>
@@ -497,8 +505,8 @@ export function LandingPage() {
             <Card
               sx={{
                 flex: 1,
-                bgcolor: 'rgba(17, 17, 16, 0.5)',
-                border: '1px solid rgba(46, 44, 40, 0.5)',
+                bgcolor: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
                 borderTop: '3px solid #06b6d4',
                 borderRadius: 2,
                 backdropFilter: 'blur(4px)',
@@ -526,21 +534,21 @@ export function LandingPage() {
             <Card
               sx={{
                 flex: 1,
-                bgcolor: 'rgba(17, 17, 16, 0.5)',
-                border: '1px solid rgba(46, 44, 40, 0.5)',
-                borderTop: '3px solid #f97316',
+                bgcolor: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
+                borderTop: '3px solid #34d399',
                 borderRadius: 2,
                 backdropFilter: 'blur(4px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: '#f97316',
+                  borderColor: '#34d399',
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 24px rgba(249, 115, 22, 0.2)',
+                  boxShadow: '0 8px 24px rgba(52, 211, 153, 0.2)',
                 },
               }}
             >
               <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <SearchIcon sx={{ fontSize: 56, color: '#f97316', mb: 2 }} />
+                <SearchIcon sx={{ fontSize: 56, color: '#34d399', mb: 2 }} />
                 <Typography variant="h5" gutterBottom sx={{ color: 'var(--page-text-primary)', fontWeight: 600, mb: 2 }}>
                   Share & Verify
                 </Typography>
@@ -555,7 +563,7 @@ export function LandingPage() {
       </Box>
 
       {/* Roadmap Section */}
-      <Container maxWidth="md" sx={{ py: 10 }}>
+      <Container maxWidth="lg" sx={{ py: 10 }}>
         <Typography
           variant="h3"
           component="h2"
@@ -567,7 +575,7 @@ export function LandingPage() {
             color: 'var(--page-text-primary)',
           }}
         >
-          Product Roadmap
+          Everything you need, already here
         </Typography>
         <Typography
           variant="body1"
@@ -576,165 +584,96 @@ export function LandingPage() {
             mb: 6,
             color: 'var(--page-text-secondary)',
             fontSize: '1.1rem',
-            maxWidth: 600,
+            maxWidth: 640,
             mx: 'auto',
           }}
         >
-          Our journey from timeline editor to collaborative knowledge platform
+          A complete toolkit for building, exploring, and sharing source-linked timelines.
         </Typography>
 
-        {/* Git-style commit visualization */}
-        <Box sx={{ position: 'relative', maxWidth: 700, mx: 'auto' }}>
-          {/* Vertical line */}
-          <Box
-            sx={{
-              position: 'absolute',
-              left: '20px',
-              top: '24px',
-              bottom: '24px',
-              width: '2px',
-              bgcolor: '#2e2c28',
-            }}
-          />
-
-          {/* Roadmap items */}
-          <Stack spacing={3}>
-            {/* Completed phases */}
-            {[
-              { version: 'v0.2.x', title: 'Timeline Editor & Layout Engine', desc: 'Infinite zoom, smart card layout, degradation system' },
-              { version: 'v0.3.x', title: 'Event Navigation & Authoring', desc: 'Event editor, minimap, interactive highlighting' },
-              { version: 'v0.4.x', title: 'Home Page & Timeline Management', desc: 'Discovery feeds, CRUD operations, visibility controls' },
-              { version: 'v0.5.0-5.10', title: 'Firebase Authentication & Firestore', desc: 'User accounts, cloud storage, real-time sync' },
-              { version: 'v0.5.11-5.20', title: 'Platform Polish & Admin Tools', desc: 'Dark theme, admin panel, statistics, multi-agent orchestration' },
-              { version: 'v0.5.21-5.36', title: 'UX Refinements & Branding', desc: 'Stream viewer, import/export, new branding, full-width layouts' },
-            ].map((phase, index) => (
-              <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', position: 'relative', pl: 6 }}>
-                {/* Commit dot */}
-                <CheckCircleIcon
-                  sx={{
-                    position: 'absolute',
-                    left: '11px',
-                    top: '2px',
-                    fontSize: 20,
-                    color: '#3fb950',
-                  }}
-                />
-                <Box>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: 'var(--page-text-primary)',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      mb: 0.5,
-                    }}
-                  >
-                    {phase.version} - {phase.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: 'var(--page-text-secondary)',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    {phase.desc}
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-
-            {/* Current phase */}
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', position: 'relative', pl: 6 }}>
-              <FiberManualRecordIcon
-                sx={{
-                  position: 'absolute',
-                  left: '11px',
-                  top: '2px',
-                  fontSize: 20,
-                  color: '#f97316',
-                  animation: 'pulse 2s ease-in-out infinite',
-                  '@keyframes pulse': {
-                    '0%, 100%': { opacity: 1 },
-                    '50%': { opacity: 0.5 },
-                  },
-                  '@media (prefers-reduced-motion: reduce)': {
-                    animation: 'none',
-                  },
-                }}
-              />
+        {/* What's here today */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2.5, mb: 8 }}>
+          {[
+            { icon: 'timeline', title: 'Visual timeline builder', desc: 'Infinite-zoom canvas, from centuries to a single day.' },
+            { icon: 'smart_toy', title: 'AI assistant', desc: 'Draft and expand timelines with an AI that cites sources.' },
+            { icon: 'link', title: 'Source-linked events', desc: 'Every event can carry its sources for verification.' },
+            { icon: 'view_stream', title: 'Readable Stream view', desc: 'A clean chronological reading mode for any timeline.' },
+            { icon: 'share', title: 'Sharing & embeds', desc: 'Share a link or embed a timeline anywhere.' },
+            { icon: 'sync_alt', title: 'Import & export', desc: 'Move timelines in and out as portable YAML.' },
+            { icon: 'bolt', title: 'Live current events', desc: 'Rolling, continuously-updated timelines like the Iran War.' },
+            { icon: 'api', title: 'Automation API', desc: 'Add events programmatically via a token-auth REST API.' },
+          ].map((f, i) => (
+            <Box
+              key={i}
+              sx={{
+                bgcolor: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
+                borderRadius: 2.5,
+                p: 2.5,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  borderColor: 'var(--page-accent)',
+                  transform: 'translateY(-3px)',
+                  boxShadow: '0 18px 36px -22px rgba(20,30,60,0.35)',
+                },
+              }}
+            >
               <Box
                 sx={{
-                  bgcolor: 'rgba(249, 115, 22, 0.1)',
-                  border: '1px solid rgba(249, 115, 22, 0.3)',
+                  width: 40,
+                  height: 40,
                   borderRadius: 2,
-                  p: 2,
-                  flex: 1,
+                  bgcolor: 'rgba(91, 91, 214, 0.10)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mb: 1.5,
                 }}
               >
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: '#f97316',
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    mb: 0.5,
-                  }}
-                >
-                  v0.5.37+ - Current: User Onboarding Experience
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'var(--page-text-secondary)',
-                    fontSize: '0.9rem',
-                  }}
-                >
-                  Empty states, timeline templates, guided tour, first-run experience
-                </Typography>
+                <span className="material-symbols-rounded" style={{ fontSize: '22px', color: '#5b5bd6' }}>
+                  {f.icon}
+                </span>
               </Box>
+              <Typography variant="subtitle1" sx={{ color: 'var(--page-text-primary)', fontWeight: 600, fontSize: '0.95rem', mb: 0.5 }}>
+                {f.title}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'var(--page-text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                {f.desc}
+              </Typography>
             </Box>
+          ))}
+        </Box>
 
-            {/* Upcoming phases */}
+        {/* Coming next */}
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="overline" sx={{ color: 'var(--page-accent)', fontWeight: 700, letterSpacing: '0.08em' }}>
+            Coming next
+          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center" sx={{ mt: 2 }}>
             {[
-              { version: 'v0.6.x', title: 'Social & Sharing', desc: 'Share links, follows, discovery, activity feeds' },
-              { version: 'v0.7.x', title: 'AI Integration', desc: 'Chat interface, timeline Q&A, auto-suggestions, fact-checking' },
-              { version: 'v0.8.x', title: 'Rich Media & Archival', desc: 'Image/video uploads, link previews, web page snapshots' },
-              { version: 'v0.9.x', title: 'Git-Based Version Control', desc: 'Timeline history, fork/merge workflows, attribution' },
-              { version: 'v1.0.0', title: 'Full Platform Launch', desc: 'Complete collaborative knowledge platform with all core features' },
-            ].map((phase, index) => (
-              <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', position: 'relative', pl: 6, opacity: 0.6 }}>
-                <RadioButtonUncheckedIcon
-                  sx={{
-                    position: 'absolute',
-                    left: '11px',
-                    top: '2px',
-                    fontSize: 20,
-                    color: '#2e2c28',
-                  }}
-                />
-                <Box>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: 'var(--page-text-secondary)',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      mb: 0.5,
-                    }}
-                  >
-                    {phase.version} - {phase.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: '#71717a',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    {phase.desc}
-                  </Typography>
-                </Box>
+              { icon: 'account_tree', label: 'Version history & fork / merge' },
+              { icon: 'image', label: 'Rich media & link previews' },
+              { icon: 'travel_explore', label: 'Better discovery & follows' },
+            ].map((c, i) => (
+              <Box
+                key={i}
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  bgcolor: 'var(--page-bg-elevated)',
+                  border: '1px solid var(--page-border)',
+                  borderRadius: 999,
+                  px: 2,
+                  py: 1,
+                }}
+              >
+                <span className="material-symbols-rounded" style={{ fontSize: '18px', color: 'var(--page-text-secondary)' }}>
+                  {c.icon}
+                </span>
+                <Typography variant="body2" sx={{ color: 'var(--page-text-secondary)', fontWeight: 500 }}>
+                  {c.label}
+                </Typography>
               </Box>
             ))}
           </Stack>
@@ -784,7 +723,7 @@ export function LandingPage() {
               fontWeight: 600,
               '&:hover': {
                 borderColor: 'var(--page-accent)',
-                bgcolor: 'rgba(226, 163, 54, 0.1)',
+                bgcolor: 'rgba(91, 91, 214, 0.08)',
               },
             }}
           >
@@ -794,7 +733,7 @@ export function LandingPage() {
       </Container>
 
       {/* Footer - Reduced prominence */}
-      <Box sx={{ bgcolor: 'rgba(17, 17, 16, 0.8)', borderTop: '1px solid rgba(46, 44, 40, 0.5)', backdropFilter: 'blur(8px)', py: 6 }}>
+      <Box sx={{ bgcolor: 'var(--page-bg-elevated)', borderTop: '1px solid var(--page-border)', py: 6 }}>
         <Container maxWidth="lg">
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={6} sx={{ mb: 4 }}>
             <Box sx={{ flex: 1 }}>
@@ -809,7 +748,7 @@ export function LandingPage() {
               <Typography variant="subtitle2" gutterBottom sx={{ color: 'var(--page-text-secondary)', fontSize: '0.85rem', mb: 1.5 }}>
                 Product
               </Typography>
-              <Stack spacing={0.5}>
+              <Stack spacing={0.5} alignItems="flex-start">
                 <Button
                   size="small"
                   onClick={handleBrowseTimelines}
@@ -818,10 +757,27 @@ export function LandingPage() {
                     justifyContent: 'flex-start',
                     textTransform: 'none',
                     fontSize: '0.85rem',
-                    '&:hover': { color: 'var(--page-text-primary)' },
+                    minWidth: 0,
+                    px: 0,
+                    '&:hover': { color: 'var(--page-text-primary)', background: 'transparent' },
                   }}
                 >
                   Browse Timelines
+                </Button>
+                <Button
+                  size="small"
+                  onClick={handleCreateTimeline}
+                  sx={{
+                    color: 'var(--page-text-secondary)',
+                    justifyContent: 'flex-start',
+                    textTransform: 'none',
+                    fontSize: '0.85rem',
+                    minWidth: 0,
+                    px: 0,
+                    '&:hover': { color: 'var(--page-text-primary)', background: 'transparent' },
+                  }}
+                >
+                  {user ? 'Create a timeline' : 'Sign in'}
                 </Button>
               </Stack>
             </Box>
@@ -843,7 +799,7 @@ export function LandingPage() {
                   }}
                 >
                   <EmailIcon sx={{ fontSize: 18 }} />
-                  cynako@gmail.com
+                  Email us
                 </Link>
                 <Link
                   href="https://github.com/CynaCons/powertimeline"
@@ -873,31 +829,10 @@ export function LandingPage() {
               display: 'block',
               fontSize: '0.8rem',
               pt: 3,
-              borderTop: '1px solid #2e2c28',
+              borderTop: '1px solid var(--page-border)',
             }}
           >
-            © 2025 PowerTimeline. Built for people who connect the dots.
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: '#484f58',
-              textAlign: 'center',
-              display: 'block',
-              fontSize: '0.75rem',
-              mt: 1,
-            }}
-          >
-            Built with{' '}
-            <Link
-              href="https://github.com/CynaCons/PowerSpawn"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ color: '#71717a', '&:hover': { color: 'var(--page-accent)' } }}
-            >
-              PowerSpawn
-            </Link>
-            {' '}— AI-powered multi-agent orchestration
+            © {new Date().getFullYear()} PowerTimeline. Built for people who connect the dots.
           </Typography>
         </Container>
       </Box>

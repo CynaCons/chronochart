@@ -93,7 +93,7 @@ export const Node: React.FC<NodeProps> = ({
       className={`
   absolute rounded-xl shadow-md cursor-pointer
   hover:shadow-lg
-        ${isSelected ? 'ring-2 ring-blue-500 shadow-lg' : ''}
+        ${isSelected ? 'ring-2 ring-indigo-500 shadow-lg' : ''}
         ${styles.padding}
       `}
       style={{

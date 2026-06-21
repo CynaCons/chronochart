@@ -86,7 +86,7 @@ export function CardRenderer({
 }
 
 function getCardTypeStyles(cardType: CardType): string {
-  const baseStyles = 'border rounded overflow-hidden transition-theme';
+  const baseStyles = 'border rounded-lg overflow-hidden transition-theme';
 
   switch (cardType) {
     case 'full':

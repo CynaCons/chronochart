@@ -36,7 +36,7 @@ export const createAppTheme = (isDarkMode: boolean = false) => createTheme({
       contrastText: '#ffffff',
     },
     background: {
-      default: isDarkMode ? '#111110' : '#faf8f5',
+      default: isDarkMode ? '#111110' : '#ffffff',
       paper: isDarkMode ? '#1a1918' : semanticColors.neutral[0],
     },
     text: {
@@ -72,8 +72,8 @@ export const createAppTheme = (isDarkMode: boolean = false) => createTheme({
         },
         containedPrimary: {
           boxShadow: isDarkMode
-            ? '0 2px 6px rgba(226, 163, 54, 0.3)'
-            : '0 2px 6px rgba(201, 138, 31, 0.25)',
+            ? '0 6px 16px -6px rgba(124, 124, 240, 0.5)'
+            : '0 6px 16px -6px rgba(91, 91, 214, 0.45)',
         },
         outlined: {
           borderColor: 'rgba(0,0,0,0.2)',
@@ -84,8 +84,8 @@ export const createAppTheme = (isDarkMode: boolean = false) => createTheme({
       styleOverrides: {
         root: {
           borderRadius: 10,
-          backgroundColor: '#F3F6FC',
-          '&:hover': { backgroundColor: '#EDF3FE' },
+          backgroundColor: '#f6f7f9',
+          '&:hover': { backgroundColor: '#eef0f4' },
           '&:before, &:after': { borderBottom: 'none' },
         },
         input: {

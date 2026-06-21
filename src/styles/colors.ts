@@ -3,16 +3,17 @@
 
 export const semanticColors = {
   primary: {
-    50: '#E3F2FD',
-    100: '#BBDEFB',
-    200: '#90CAF9',
-    300: '#64B5F6',
-    400: '#42A5F5',
-    500: '#2196F3', // Main primary color
-    600: '#1E88E5',
-    700: '#1976D2', // Dark primary
-    800: '#1565C0',
-    900: '#0D47A1'
+    // "Calm Modern" indigo accent
+    50: '#EEEEFB',
+    100: '#E0E0F8',
+    200: '#C7C7F2',
+    300: '#A5A5EC',
+    400: '#8080E3',
+    500: '#5B5BD6', // Main primary color (Calm Modern indigo)
+    600: '#4A4AC8',
+    700: '#3F3FB0', // Dark primary
+    800: '#33338F',
+    900: '#28286E'
   },
 
   secondary: {

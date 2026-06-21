@@ -10,6 +10,7 @@ import type { TimelineMetadata, User } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { signOutUser } from '../services/auth';
 import { getUser, getUserByUsername, getTimelines, getTimeline } from '../services/firestore';
+import { formatDateSafe } from '../lib/time';
 import { downloadTimelineAsYaml } from '../services/timelineImportExport';
 import { NavigationRail, ThemeToggleButton } from '../components/NavigationRail';
 import { BottomNavigation } from '../components/BottomNavigation';
@@ -342,7 +343,7 @@ export function UserProfilePage() {
                 </span>
                 <span
                   className="px-2 py-0.5 text-xs font-bold rounded"
-                  style={{ backgroundColor: '#f97316', color: '#fff', letterSpacing: '0.05em' }}
+                  style={{ backgroundColor: 'rgba(91, 91, 214, 0.12)', color: '#5b5bd6', letterSpacing: '0.05em' }}
                 >
                   BETA
                 </span>
@@ -409,7 +410,7 @@ export function UserProfilePage() {
                     </div>
                   </div>
                   <div className="mt-2 text-sm" style={{ color: 'var(--page-text-secondary)' }}>
-                    Joined {new Date(user.createdAt).toLocaleDateString()}
+                    Joined {formatDateSafe(user.createdAt)}
                   </div>
                 </div>
               </div>
@@ -552,12 +553,14 @@ export function UserProfilePage() {
                   </p>
                   <div className="flex items-center justify-between text-sm mt-auto pb-8" style={{ color: 'var(--page-text-secondary)' }}>
                     <span>{timeline.eventCount} events</span>
-                    <span>{new Date(timeline.updatedAt).toLocaleDateString()}</span>
+                    <span>{formatDateSafe(timeline.updatedAt)}</span>
                   </div>
-                  {/* Owner badge - absolutely positioned at bottom-left */}
+                  {/* Owner badge - absolutely positioned at bottom-left.
+                      Hidden when the timeline's owner is the profile being viewed
+                      (redundant — the username is already in the page header). */}
                   {(() => {
                     const owner = userCache.get(timeline.ownerId);
-                    return owner ? (
+                    return owner && timeline.ownerId !== user?.id ? (
                       <div className="absolute bottom-2 left-2" title={`Owner: @${owner.username}`}>
                         <span
                           className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"

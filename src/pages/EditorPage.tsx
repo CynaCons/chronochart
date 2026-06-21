@@ -94,7 +94,7 @@ export function EditorPage() {
   // Support both username-based (/:username/timeline/:timelineId) and legacy userId-based URLs
   const { timelineId, userId, username } = useParams<{ timelineId: string; userId?: string; username?: string }>();
   const navigate = useNavigate();
-  const { user: firebaseUser } = useAuth();
+  const { user: firebaseUser, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [timeline, setTimeline] = useState<Timeline | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -204,7 +204,9 @@ export function EditorPage() {
     ? timelineUrl(user.username, timeline.id)
     : '';
 
-  if (loading) {
+  // Wait for BOTH the timeline AND auth to resolve before rendering the editor,
+  // so an owner never briefly sees read-only / "fork" while auth is still loading.
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--page-bg)' }}>
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-10 space-y-6">

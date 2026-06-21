@@ -1,6 +1,20 @@
 export const dayMs = 24 * 60 * 60 * 1000;
 
 /**
+ * Safely format a date value for display. Returns the fallback (default "—")
+ * when the input is missing or unparseable, instead of the literal "Invalid Date".
+ */
+export function formatDateSafe(
+	input: string | number | Date | null | undefined,
+	fallback = '—'
+): string {
+	if (input === null || input === undefined || input === '') return fallback;
+	const d = new Date(input);
+	if (isNaN(d.getTime())) return fallback;
+	return d.toLocaleDateString();
+}
+
+/**
  * Format an ISO-like date string to YYYY-MM-DD. If parsing fails, return the original.
  * Accepts inputs like 'YYYY-MM-DD' or full ISO strings.
  */

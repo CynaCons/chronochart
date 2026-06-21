@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { browseUrl, OG_IMAGE_URL } from '../utils/urls';
 import { webSiteSchema } from '../utils/jsonLd';
+import { formatDateSafe } from '../lib/time';
 import type { TimelineMetadata, User } from '../types';
 import {
   getTimeline,
@@ -39,6 +40,28 @@ import { TourProvider, HomePageTour, useTour } from '../components/tours';
 import { useDebounce } from '../hooks/useDebounce';
 
 const MY_TIMELINES_PAGE_SIZE = 12;
+
+/**
+ * "N events" label with a subtle indigo density bar so cards aren't visually
+ * interchangeable (a 295-event timeline reads denser than a 10-event one).
+ * Fill is log-scaled against a ~300-event reference, clamped to 8–100%.
+ */
+function EventCount({ count }: { count: number }) {
+  const safe = Math.max(0, count || 0);
+  const pct = Math.max(8, Math.min(100, Math.round((Math.log10(safe + 1) / Math.log10(301)) * 100)));
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span>{safe} events</span>
+      <span
+        aria-hidden="true"
+        title={`${safe} events`}
+        style={{ display: 'inline-block', width: 32, height: 4, borderRadius: 999, background: 'var(--page-bg-elevated)', position: 'relative', overflow: 'hidden' }}
+      >
+        <span style={{ position: 'absolute', insetBlock: 0, left: 0, width: `${pct}%`, background: 'var(--page-accent)', borderRadius: 999 }} />
+      </span>
+    </span>
+  );
+}
 
 // Inner component that uses the tour context
 function HomePageContent() {
@@ -505,7 +528,7 @@ function HomePageContent() {
                   </span>
                   <span
                     className="px-2 py-0.5 text-xs font-bold rounded"
-                    style={{ backgroundColor: '#f97316', color: '#fff', letterSpacing: '0.05em' }}
+                    style={{ backgroundColor: 'rgba(91, 91, 214, 0.12)', color: '#5b5bd6', letterSpacing: '0.05em' }}
                   >
                     BETA
                   </span>
@@ -815,8 +838,8 @@ function HomePageContent() {
                       {timeline.description || 'No description'}
                     </p>
                     <div className="flex items-center justify-between text-sm mt-auto pb-8" style={{ color: 'var(--page-text-secondary)' }}>
-                      <span>{timeline.eventCount} events</span>
-                      <span>{new Date(timeline.updatedAt).toLocaleDateString()}</span>
+                      <EventCount count={timeline.eventCount} />
+                      <span>{formatDateSafe(timeline.updatedAt)}</span>
                     </div>
                     {/* Visibility badge - absolutely positioned at bottom-right */}
                     <div className="absolute bottom-2 right-2">
@@ -902,7 +925,7 @@ function HomePageContent() {
                   </p>
                   <div className="flex items-center justify-between text-sm mt-auto pb-8" style={{ color: 'var(--page-text-secondary)' }}>
                     <span>{timeline.viewCount} views</span>
-                    <span>{timeline.eventCount} events</span>
+                    <EventCount count={timeline.eventCount} />
                   </div>
                   {/* Owner badge - absolutely positioned at bottom-left */}
                   {timeline.ownerUsername ? (
@@ -965,8 +988,8 @@ function HomePageContent() {
             </div>
             <div className="border rounded-xl p-5 md:p-6 w-40 md:w-48" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
               <div className="flex items-center gap-2 mb-1">
-                <span className="material-symbols-rounded text-lg" style={{ color: '#f59e0b' }}>visibility</span>
-                <div className="text-2xl md:text-3xl font-bold" style={{ color: '#f59e0b' }}>{stats.viewCount}</div>
+                <span className="material-symbols-rounded text-lg" style={{ color: '#5b5bd6' }}>visibility</span>
+                <div className="text-2xl md:text-3xl font-bold" style={{ color: '#5b5bd6' }}>{stats.viewCount}</div>
               </div>
               <div className="text-sm" style={{ color: 'var(--page-text-secondary)' }}>Total Views</div>
             </div>
@@ -1018,8 +1041,8 @@ function HomePageContent() {
                     {timeline.description || 'No description'}
                   </p>
                   <div className="flex items-center justify-between text-sm mt-auto pb-8" style={{ color: 'var(--page-text-secondary)' }}>
-                    <span>{timeline.eventCount} events</span>
-                    <span>{new Date(timeline.updatedAt).toLocaleDateString()}</span>
+                    <EventCount count={timeline.eventCount} />
+                    <span>{formatDateSafe(timeline.updatedAt)}</span>
                   </div>
                   {/* Owner badge - absolutely positioned at bottom-left */}
                   {timeline.ownerUsername ? (
@@ -1100,7 +1123,7 @@ function HomePageContent() {
                       {timeline.description || 'No description'}
                     </p>
                     <div className="flex items-center justify-between text-sm mt-auto pb-8" style={{ color: 'var(--page-text-secondary)' }}>
-                      <span>{timeline.eventCount} events</span>
+                      <EventCount count={timeline.eventCount} />
                       <span>{timeline.viewCount} views</span>
                     </div>
                     {/* Owner badge - absolutely positioned at bottom-left */}
