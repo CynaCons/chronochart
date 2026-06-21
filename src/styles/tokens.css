@@ -11,8 +11,8 @@
   --page-accent-hover: #9a9af5;
   --nav-bg: #161514;
   --nav-border: #2e2c28;
-  --card-bg: #1c1b19;
-  --card-border: #2e2c28;
+  --card-bg: #232220; /* raised in dark for clearer elevation over bg + elevated bands */
+  --card-border: #353330;
   --card-border-hover: #7c7cf0;
   --input-bg: #1c1b19;
   --input-border: #2e2c28;
