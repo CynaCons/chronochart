@@ -124,7 +124,7 @@ You are the coordinator if:
 
 1. **Analyze** - Read the changes, check implementation matches requirements
 2. **Test** - Run tests for modified features (`npm test -- tests/feature/`)
-3. **Smoke test** - Run `npm test -- tests/smoke/` before reporting complete
+3. **Smoke test** - Run `npm run test:smoke` (foundation smoke) before reporting complete
 
 When spawning implementation agents, include: "Create tests and run them to verify"
 

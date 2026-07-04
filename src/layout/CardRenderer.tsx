@@ -162,12 +162,12 @@ function FullCardContent({ event, sessionDecision }: { event: Event; sessionDeci
   const sessionBadge = getSessionBadge(sessionDecision);
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-start justify-between mb-1">
-        <h3 className="card-title line-clamp-2 flex-1 pr-2" style={{ color: 'var(--color-text-primary)' }}>
+    <div className="card-body h-full flex flex-col overflow-hidden">
+      <div className="flex items-start gap-1 flex-shrink-0">
+        <h3 className="card-title card-clamp-title-2 flex-1 min-w-0" style={{ color: 'var(--color-text-primary)' }} title={event.title}>
           {event.title}
         </h3>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-shrink-0">
           {sessionBadge}
           <SourceIndicator sources={event.sources} />
           <span
@@ -179,10 +179,10 @@ function FullCardContent({ event, sessionDecision }: { event: Event; sessionDeci
           </span>
         </div>
       </div>
-      <p className="card-description mb-2 flex-1 line-clamp-3" style={{ color: 'var(--color-text-secondary)' }}>
+      <p className="card-description card-clamp-desc-3 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-text-secondary)' }} title={event.description}>
         {event.description}
       </p>
-      <div className="card-date" style={{ color: 'var(--color-text-tertiary)' }}>
+      <div className="card-date flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>
         {formatDate(event.date)}
       </div>
     </div>
@@ -194,12 +194,12 @@ function CompactCardContent({ event, sessionDecision }: { event: Event; sessionD
   const sessionBadge = getSessionBadge(sessionDecision);
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-start justify-between mb-1">
-        <h3 className="card-title line-clamp-2 flex-1 pr-2" style={{ color: 'var(--color-text-primary)' }}>
+    <div className="card-body h-full flex flex-col overflow-hidden">
+      <div className="flex items-start gap-1 flex-shrink-0">
+        <h3 className="card-title card-clamp-title-2 flex-1 min-w-0" style={{ color: 'var(--color-text-primary)' }} title={event.title}>
           {event.title}
         </h3>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-shrink-0">
           {sessionBadge}
           <SourceIndicator sources={event.sources} />
           <span
@@ -211,10 +211,10 @@ function CompactCardContent({ event, sessionDecision }: { event: Event; sessionD
           </span>
         </div>
       </div>
-      <p className="card-description line-clamp-2 flex-1" style={{ color: 'var(--color-text-secondary)' }}>
+      <p className="card-description card-clamp-desc-1 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-text-secondary)' }} title={event.description}>
         {event.description}
       </p>
-      <div className="card-date" style={{ color: 'var(--color-text-tertiary)' }}>
+      <div className="card-date flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>
         {formatDate(event.date)}
       </div>
     </div>
@@ -227,7 +227,7 @@ function TitleOnlyCardContent({ event, sessionDecision }: { event: Event; sessio
 
   return (
     <div className="h-full flex items-center justify-between">
-      <h3 className="card-title line-clamp-1 flex-1 pr-2" style={{ color: 'var(--color-text-primary)' }}>
+      <h3 className="card-title card-clamp-title-1 flex-1 min-w-0" style={{ color: 'var(--color-text-primary)' }} title={event.title}>
         {event.title}
       </h3>
       <div className="flex items-center gap-1">

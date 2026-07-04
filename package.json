@@ -13,6 +13,8 @@
     "preview": "vite preview",
     "optimize:images": "node scripts/optimize-images.mjs",
     "test": "playwright test",
+    "test:prod": "playwright test tests/production/",
+    "test:smoke": "playwright test tests/editor/01-foundation.smoke.spec.ts --project=desktop",
     "test:mobile": "playwright test --project=mobile tests/mobile/",
     "test:tablet": "playwright test --project=tablet",
     "test:responsive": "playwright test tests/responsive/",

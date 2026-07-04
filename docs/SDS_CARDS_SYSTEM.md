@@ -10,51 +10,47 @@ All card types share a universal width for visual consistency:
 
 | Card Type | Width | Height | Content |
 |---|---|---|---|
-| **Full** | 260px | 169px | Title (multi-line) + Full description + Date |
-| **Compact** | 260px | 92px | Title (2 lines) + Partial description (1 line) + Date |
-| **Title-only** | 260px | 32px | Title + Icon only (no date, no description) |
+| **Full** | 260px | 132px | Title (≤2 lines) + Description (≤3 lines) + Date |
+| **Compact** | 260px | 90px | Title (≤2 lines) + Description (≤1 line) + Date |
+| **Title-only** | 260px | 32px | Title (1 line) + source icon only (no date, no description) |
 
-**Source**: `src/layout/config.ts` - `DEFAULT_CARD_CONFIGS`
+**Source**: `src/layout/cardMetrics.ts` (single source of truth; consumed by `src/layout/config.ts` `DEFAULT_CARD_CONFIGS`).
+
+Heights are **derived from the typography contract**, not chosen by hand: `height = title lines × 17.5px + gap + description lines × 16.8px + gap + date 14.4px + padding + 2px border` (border-box), rounded up with a 1–2px safety margin. The unit test `src/layout/cardMetrics.test.ts` fails if the configured heights drift from this derivation.
 
 ### 1.2 Content Layout Rules
 
-**Full Cards (169px height):**
-- **Title**: Multi-line, no truncation, bold
-- **Description**: Full text, no truncation, multiple paragraphs supported
-- **Date**: Bottom-aligned, smaller font
-- **Spacing**: 16px padding, 8px between elements
+**Full Cards (132px height):**
+- **Title**: Max 2 lines, ellipsis truncation at end of last line
+- **Description**: Max 3 lines, ellipsis truncation at end of last line
+- **Date**: Directly under description (top-aligned stack, no bottom spacer)
+- **Spacing**: 12px padding (`p-3`), 2px between elements (`mt-0.5`)
 
-**Compact Cards (92px height):**
-- **Title**: Max 2 lines, ellipsis truncation if needed
+**Compact Cards (90px height):**
+- **Title**: Max 2 lines, ellipsis truncation
 - **Description**: Single line, ellipsis truncation
-- **Date**: Bottom-aligned
-- **Spacing**: 12px padding, 6px between elements
-- **Design note**: Height increased from 78px to 92px in v0.2.5.1 to prevent text cutoff
+- **Date**: Directly under description (top-aligned stack)
+- **Spacing**: 8px padding (`p-2`), 2px between elements
+- **Design note**: Height derived from typography contract (see §1.1); replaced earlier hand-tuned values (78 → 92 → 120 → 90px)
 
 **Title-only Cards (32px height):**
 - **Title**: Single line, ellipsis truncation
-- **Icon**: Category icon displayed on the right
+- **Icon**: Source indicator displayed on the right
 - **No date or description displayed**
-- **Spacing**: 8px padding, horizontal layout
+- **Spacing**: 4px padding (`p-1`), horizontal layout
 - **Use case**: High-density timelines with >4 events per half-column
 
 ### 1.3 Typography Specifications
 
+All card types share one typography scale (`src/styles/index.css`), which is the input to the height derivation in `src/layout/cardMetrics.ts`:
+
 ```css
-/* Full Cards */
-.card-full .title { font-size: 16px; font-weight: 600; line-height: 1.4; }
-.card-full .description { font-size: 14px; line-height: 1.5; }
-.card-full .date { font-size: 12px; opacity: 0.7; }
-
-/* Compact Cards */
-.card-compact .title { font-size: 14px; font-weight: 600; line-height: 1.3; }
-.card-compact .description { font-size: 12px; line-height: 1.4; }
-.card-compact .date { font-size: 11px; opacity: 0.7; }
-
-/* Title-only Cards */
-.card-title-only .title { font-size: 13px; font-weight: 500; }
-/* No date displayed in title-only cards */
+.card-title       { font-size: 0.875rem; font-weight: 600; line-height: 1.25; } /* 17.5px/line */
+.card-description { font-size: 0.75rem;  font-weight: 400; line-height: 1.4;  } /* 16.8px/line */
+.card-date        { font-size: 0.75rem;  font-weight: 500; line-height: 1.2;  } /* 14.4px */
 ```
+
+Line limits are enforced by `.card-clamp-*` utilities (`-webkit-line-clamp` plus an em-based `max-height` tied to the line count) so the ellipsis always lands at the end of the last visible line, never mid-block.
 
 ### 1.4 Visual Hierarchy
 
@@ -117,15 +113,16 @@ Event Count → Card Type Selection
 The degradation engine tracks vertical space saved by degradation:
 
 ```typescript
+// Heights come from CARD_HEIGHTS in src/layout/cardMetrics.ts
 // Space saved by degrading from full to compact
-const fullCardHeight = 169;    // Full card height
-const compactCardHeight = 92;  // Compact card height
-const spaceSavedPerCard = fullCardHeight - compactCardHeight; // 77px per card
+const fullCardHeight = 132;    // Full card height
+const compactCardHeight = 90;  // Compact card height
+const spaceSavedPerCard = fullCardHeight - compactCardHeight; // 42px per card
 const totalSpaceSaved = spaceSavedPerCard * eventCount;
 
 // Space saved by degrading from compact to title-only
 const titleOnlyHeight = 32;    // Title-only card height
-const spaceSavedPerCard = compactCardHeight - titleOnlyHeight; // 60px per card
+const spaceSavedPerCard = compactCardHeight - titleOnlyHeight; // 58px per card
 const totalSpaceSaved = spaceSavedPerCard * Math.min(eventCount, 4);
 ```
 
@@ -1103,3 +1100,4 @@ applyDegradationAndPromotion(groups: ColumnGroup[]): ColumnGroup[] {
 - 2025-10-01 — Documented current implementation: Compact cards 92px (not 78px)
 - 2025-10-01 — Added overflow badge merging strategy documentation
 - 2025-10-01 — Added view window filtering design rationale
+- 2026-07-04 — Card heights now derived from the typography contract in `src/layout/cardMetrics.ts` (full 132px, compact 90px, title-only 32px; guarded by `cardMetrics.test.ts`); date is top-aligned directly under description (bottom spacer removed); §1.1–1.3 and §2.3 updated accordingly

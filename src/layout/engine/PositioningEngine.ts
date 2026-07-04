@@ -13,6 +13,7 @@ import type { LayoutConfig, PositionedCard, LayoutResult, Anchor, EventCluster }
 import type { ColumnGroup } from '../LayoutEngine';
 import { CapacityModel, CARD_FOOTPRINTS } from '../CapacityModel';
 import { getEventTimestamp } from '../../lib/time';
+import { CARD_SPACING } from '../cardMetrics';
 
 export class PositioningEngine {
   private config: LayoutConfig;
@@ -66,7 +67,7 @@ export class PositioningEngine {
 
     for (const group of groups) {
       // Calculate optimal card size to better use available space
-      const cardSpacing = 12; // reduced inter-card spacing
+      const cardSpacing = CARD_SPACING; // reduced inter-card spacing
 
       // Mixed card type support: cards may have different heights within the same group
       // The group.cards already have correct heights set by DegradationEngine
@@ -117,18 +118,21 @@ export class PositioningEngine {
         // Position above cards with mixed heights and proper spacing
         // Start from timeline (already positioned with safe zone in config.ts) and stack upward (decreasing Y)
         let aboveY = this.timelineY - aboveTimelineMargin;
-        aboveCards.forEach((card) => {
-          // Use the card's pre-set height from DegradationEngine (don't overwrite!)
-          // card.height is already set correctly for mixed card types
-          card.y = aboveY - card.height;
-          card.x = group.centerX;  // Store CENTER coordinate (collision detection expects center)
-
-          // Clamp to minimap safe zone (prevent overlap with minimap 0-100px)
+        aboveCards.forEach((card, index) => {
           const MINIMAP_SAFE_ZONE = 100;
-          if (card.y < MINIMAP_SAFE_ZONE) {
-            card.y = MINIMAP_SAFE_ZONE;
+          let targetY = aboveY - card.height;
+          targetY = Math.max(MINIMAP_SAFE_ZONE, targetY);
+
+          // Prevent overlap when minimap clamp would stack cards on the same Y
+          if (index > 0) {
+            const prevCard = aboveCards[index - 1];
+            const maxY = prevCard.y - cardSpacing - card.height;
+            targetY = Math.min(targetY, maxY);
+            targetY = Math.max(MINIMAP_SAFE_ZONE, targetY);
           }
 
+          card.y = targetY;
+          card.x = group.centerX;  // Store CENTER coordinate (collision detection expects center)
           aboveY = card.y - cardSpacing; // Next card starts above this one
 
           positionedCards.push(card);
@@ -430,7 +434,7 @@ export class PositioningEngine {
    * This re-anchors each cluster's baseline card near the timeline and re-stacks tightly.
    */
   private recompactClusters(positionedCards: PositionedCard[]): void {
-    const cardSpacing = 12;
+    const cardSpacing = CARD_SPACING;
     const aboveTimelineMargin = 48;
     const belowTimelineMargin = 55;
     const MINIMAP_SAFE_ZONE = 100;
@@ -462,18 +466,14 @@ export class PositioningEngine {
         // Re-stack remaining cards tightly upward from baseline
         for (let i = 1; i < cards.length; i++) {
           const prevCard = cards[i - 1];
-          const expectedY = prevCard.y - cardSpacing - cards[i].height;
-          // Clamp to minimap safe zone
-          const clampedY = Math.max(MINIMAP_SAFE_ZONE, expectedY);
-          // If clamping would cause overlap with the previous card, keep the card
-          // at the collision-resolved position rather than introducing a new overlap
-          if (clampedY + cards[i].height > prevCard.y) {
-            // Can't fit without overlap — leave at collision-resolved position
-            // but still ensure it's above the safe zone
-            cards[i].y = Math.max(MINIMAP_SAFE_ZONE, cards[i].y);
-          } else {
-            cards[i].y = clampedY;
+          let expectedY = prevCard.y - cardSpacing - cards[i].height;
+          expectedY = Math.max(MINIMAP_SAFE_ZONE, expectedY);
+          // Never stack on the same Y — move further up if clamp would overlap
+          if (expectedY + cards[i].height > prevCard.y - cardSpacing) {
+            expectedY = prevCard.y - cardSpacing - cards[i].height;
+            expectedY = Math.max(MINIMAP_SAFE_ZONE, expectedY);
           }
+          cards[i].y = expectedY;
         }
       } else {
         // Sort by Y ascending (closest to timeline = lowest Y first)

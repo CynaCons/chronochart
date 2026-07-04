@@ -64,7 +64,6 @@ export interface LayoutConfig {
   clusterThreshold: number; // Pixel distance for clustering
   cardConfigs: Record<CardType, CardConfig>;
   columnSpacing: number;    // Horizontal spacing between columns
-  rowSpacing: number;       // Vertical spacing between rows
   debugLayout?: boolean;    // Enable debug logging
 }
 

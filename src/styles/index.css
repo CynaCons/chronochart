@@ -238,6 +238,48 @@
   letter-spacing: 0.025em;
 }
 
+/*
+ * Card text clamp zones — max-height is tied to line-count × line-height so
+ * ellipsis always appears at the end of the last visible line, never mid-card
+ * from flex shrinking the clamp box (flex-1 + line-clamp footgun).
+ */
+.card-clamp-title-1,
+.card-clamp-title-2,
+.card-clamp-desc-1,
+.card-clamp-desc-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-overflow: ellipsis;
+}
+
+.card-clamp-title-1 {
+  -webkit-line-clamp: 1;
+  max-height: 1.25em; /* 1 line × line-height */
+}
+
+.card-clamp-title-2 {
+  -webkit-line-clamp: 2;
+  max-height: 2.5em; /* 2 lines × line-height (1.25) */
+}
+
+.card-clamp-desc-1 {
+  -webkit-line-clamp: 1;
+  max-height: 1.4em; /* 1 line × line-height */
+}
+
+.card-clamp-desc-3 {
+  -webkit-line-clamp: 3;
+  max-height: 4.2em; /* 3 lines × line-height (1.4) */
+}
+
+/* Flex column body: text blocks are fixed-height and top-aligned (no spacer) */
+.card-body {
+  min-height: 0;
+}
+
 .card-count {
   font-size: 1rem;
   font-weight: 700;

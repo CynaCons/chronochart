@@ -17,7 +17,6 @@ describe('EventClustering', () => {
       clusterThreshold: 50,
       cardConfigs: {} as any, // Not needed for clustering tests
       columnSpacing: 20,
-      rowSpacing: 12,
     };
     clustering = new EventClustering(config);
     viewStart = new Date('2020-01-01');

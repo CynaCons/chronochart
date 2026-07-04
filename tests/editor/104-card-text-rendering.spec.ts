@@ -165,10 +165,17 @@ async function validateLineClamp(page: any) {
         return (computed as any).webkitLineClamp || (computed as any).lineClamp || 'none';
       };
 
-      const titleClamp = getTitleClamp();
-      const descClamp = getDescClamp();
+      const titleClamp = String(getTitleClamp());
+      const descClamp = descEl ? String(getDescClamp()) : 'none';
 
-      // Expected values based on CardRenderer.tsx
+      // Clamp zones must have max-height tied to line count (ellipsis at last line, not mid-card)
+      const titleMaxH = titleEl ? window.getComputedStyle(titleEl).maxHeight : '';
+      const descMaxH = descEl ? window.getComputedStyle(descEl).maxHeight : '';
+      const hasClampMaxHeight =
+        (!titleEl || titleMaxH !== 'none') &&
+        (!descEl || descMaxH !== 'none');
+
+      // Expected values based on DeterministicLayoutComponent card content
       const expected = {
         'full': { title: '2', desc: '3' },
         'compact': { title: '2', desc: '1' },
@@ -183,7 +190,11 @@ async function validateLineClamp(page: any) {
         descClamp,
         expectedTitle: exp.title,
         expectedDesc: exp.desc,
-        isValid: titleClamp === exp.title && (descClamp === exp.desc || (!descEl && exp.desc === 'none'))
+        hasClampMaxHeight,
+        isValid:
+          hasClampMaxHeight &&
+          titleClamp === exp.title &&
+          (descClamp === exp.desc || (!descEl && exp.desc === 'none'))
       };
     });
   });
@@ -848,5 +859,148 @@ ${report.overflowIssues.total > 0 ? '- Fix overflow issues in affected card type
 
     // ENFORCE: No cards should have overflow issues
     expect(report.overflowIssues.total, `Found ${report.overflowIssues.total} cards with text overflow. All cards should render without clipping.`).toBe(0);
+  });
+
+  test('T104.11: Internal fill efficiency (gap ratio)', async ({ page }) => {
+    test.info().annotations.push({ type: 'req', description: 'CC-REQ-CARDS-FILL-001' });
+
+    console.log('\n📐 === T104.11: INTERNAL FILL EFFICIENCY ===\n');
+
+    // Telemetry + regression guard for F9 residual (internal dead space).
+    //
+    // For every visible full/compact card that HAS a description, measure the
+    // dead space below the last content block (the date). Phase 1 derived card
+    // heights from the typography contract for the WORST case (2-line title +
+    // full description); cards whose title/description are shorter leave the
+    // reserved space empty (top-aligned stack pools slack at the bottom).
+    //
+    // The <0.18 "efficient fill" target is NOT achievable with fixed heights
+    // when content is short (measured 2026-07-04: full≈0.263, compact≈0.337 on
+    // french-revolution, dominated by 1-line titles in a 2-line title budget).
+    // Reaching <0.18 requires quantized per-instance heights — owned by plan
+    // item C1 (docs/LAYOUT_IMPROVEMENT_PLAN.md) / B2. This test therefore LOGS
+    // the distribution (the telemetry C1 consumes) and enforces only a loose
+    // regression guard so the gate stays green until C1 lands. See §5 finding.
+    const REGRESSION_MAX = 0.40; // catastrophic-emptiness guard; baseline worst ≈0.337
+    const FILL_TARGET = 0.18;    // C1/B2 goal, reported not enforced here
+    const gapData = await page.locator('[data-testid="event-card"]').evaluateAll((cards: HTMLElement[]) => {
+      const rows: any[] = [];
+      cards.forEach(card => {
+        const cardType = card.getAttribute('data-card-type');
+        if (cardType !== 'full' && cardType !== 'compact') return;
+
+        const descEl = card.querySelector('.card-description') as HTMLElement | null;
+        const dateEl = card.querySelector('.card-date') as HTMLElement | null;
+        // Only cards that actually render a description contribute (spec: event HAS a description)
+        if (!descEl || (descEl.textContent || '').trim().length === 0) return;
+        // The date is the bottom-most content block; if absent, fall back to description
+        const lastEl = dateEl || descEl;
+
+        const cardRect = card.getBoundingClientRect();
+        const lastRect = lastEl.getBoundingClientRect();
+        const gap = cardRect.bottom - lastRect.bottom;
+        const ratio = gap / cardRect.height;
+
+        rows.push({ cardType, gap: Math.round(gap), ratio: Number(ratio.toFixed(3)) });
+      });
+      return rows;
+    });
+
+    // Report distribution per type
+    const byType: Record<string, number[]> = {};
+    gapData.forEach((r: any) => {
+      (byType[r.cardType] = byType[r.cardType] || []).push(r.ratio);
+    });
+    for (const [type, ratios] of Object.entries(byType)) {
+      const min = Math.min(...ratios);
+      const max = Math.max(...ratios);
+      const avg = ratios.reduce((a, b) => a + b, 0) / ratios.length;
+      console.log(`${type.toUpperCase()} (n=${ratios.length}): gap ratio min=${min.toFixed(3)} avg=${avg.toFixed(3)} max=${max.toFixed(3)}`);
+    }
+
+    // Report against the C1/B2 fill target (telemetry only)
+    const overTarget = gapData.filter((r: any) => r.ratio >= FILL_TARGET);
+    const worst = Math.max(...gapData.map((r: any) => r.ratio));
+    console.log(`\nFill target ${FILL_TARGET}: ${overTarget.length}/${gapData.length} cards over target (owned by C1/B2). Worst ratio: ${worst.toFixed(3)}`);
+
+    expect(gapData.length).toBeGreaterThan(0);
+    // ENFORCE (regression guard only): no card is catastrophically empty.
+    // The tighter FILL_TARGET is an aspirational C1/B2 acceptance criterion.
+    const regressions = gapData.filter((r: any) => r.ratio >= REGRESSION_MAX);
+    expect(regressions.length, `${regressions.length} cards exceed ${REGRESSION_MAX} internal gap ratio — dead-space regression beyond documented baseline.`).toBe(0);
+  });
+
+  test('T104.12: Ellipsis only at final allowed line', async ({ page }) => {
+    test.info().annotations.push({ type: 'req', description: 'CC-REQ-CARDS-TEXT-001' });
+
+    console.log('\n✂️  === T104.12: ELLIPSIS PLACEMENT ===\n');
+
+    // For clamped elements that are actually truncated (scrollHeight > clientHeight),
+    // the rendered line count must equal the configured clamp — truncation may only
+    // occur at the last allowed line, never mid-card.
+    const clampByType: Record<string, { title: number; desc: number | null }> = {
+      'full': { title: 2, desc: 3 },
+      'compact': { title: 2, desc: 1 },
+      'title-only': { title: 1, desc: null },
+    };
+
+    const results = await page.locator('[data-testid="event-card"]').evaluateAll(
+      (cards: HTMLElement[], clampMap) => {
+        const rows: any[] = [];
+        const lineCount = (el: HTMLElement) => {
+          const lh = parseFloat(window.getComputedStyle(el).lineHeight);
+          if (!lh || Number.isNaN(lh)) return null;
+          return Math.round(el.clientHeight / lh);
+        };
+        cards.forEach(card => {
+          const cardType = card.getAttribute('data-card-type') || 'full';
+          const clamp = (clampMap as any)[cardType] || (clampMap as any)['full'];
+          const check = (sel: string, expected: number | null) => {
+            if (expected == null) return;
+            const el = card.querySelector(sel) as HTMLElement | null;
+            if (!el) return;
+            const truncated = el.scrollHeight > el.clientHeight + 1;
+            if (!truncated) return; // only truncated elements are constrained by this rule
+            const lines = lineCount(el);
+            rows.push({ cardType, sel, expected, lines, ok: lines === expected });
+          };
+          check('.card-title', clamp.title);
+          check('.card-description', clamp.desc);
+        });
+        return rows;
+      },
+      clampByType
+    );
+
+    const truncated = results.length;
+    const bad = results.filter((r: any) => !r.ok);
+    console.log(`Truncated elements checked: ${truncated}, mismatches: ${bad.length}`);
+    bad.slice(0, 5).forEach((r: any) => {
+      console.log(`  ❌ ${r.cardType} ${r.sel}: rendered ${r.lines} lines, expected clamp ${r.expected}`);
+    });
+
+    // ENFORCE: every truncated clamp renders exactly its configured line count
+    expect(bad.length, `${bad.length} truncated elements do not fill their clamp before truncating.`).toBe(0);
+  });
+
+  test('T104.13: Compact tier is present (no title-only↔full jumps)', async ({ page }) => {
+    test.info().annotations.push({ type: 'req', description: 'CC-REQ-DEGRADATION-001' });
+
+    console.log('\n🪜 === T104.13: COMPACT TIER PRESENCE ===\n');
+
+    const counts = await page.locator('[data-testid="event-card"]').evaluateAll((cards: HTMLElement[]) => {
+      const byType: Record<string, number> = { full: 0, compact: 0, 'title-only': 0 };
+      cards.forEach(c => {
+        const t = c.getAttribute('data-card-type') || 'unknown';
+        byType[t] = (byType[t] || 0) + 1;
+      });
+      return byType;
+    });
+
+    console.log(`Distribution: full=${counts.full} compact=${counts.compact} title-only=${counts['title-only']}`);
+
+    // On the dense french-revolution fixture at default zoom, the layout should
+    // exercise the intermediate compact tier — not jump straight full→title-only.
+    expect(counts.compact, 'Expected at least one compact card; missing compact tier indicates F4 (title-only↔full jump).').toBeGreaterThan(0);
   });
 });

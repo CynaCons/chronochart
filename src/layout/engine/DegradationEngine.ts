@@ -12,6 +12,7 @@ import type { Event } from '../../types';
 import type { LayoutConfig, PositionedCard, CardType } from '../types';
 import type { ColumnGroup, DegradationMetrics } from '../LayoutEngine';
 import { FEATURE_FLAGS } from '../config';
+import { CARD_SPACING } from '../cardMetrics';
 
 export class DegradationEngine {
   private config: LayoutConfig;
@@ -58,17 +59,52 @@ export class DegradationEngine {
   }
 
   /**
-   * Legacy degradation algorithm - uniform card type per group
+   * Legacy degradation algorithm - per half-column assignment
    * Used when ENABLE_CLUSTER_COORDINATION is false
    */
   private applyLegacyDegradation(groups: ColumnGroup[]): ColumnGroup[] {
     for (const group of groups) {
-      // Determine SINGLE card type for entire group (uniform degradation)
-      const cardType = this.determineCardType(group);
-      group.cards = this.createIndividualCards(group, [cardType]);
+      this.assignCardsForGroup(group);
     }
 
     return groups;
+  }
+
+  /**
+   * Assign card types for a single half-column group.
+   * Prefers mixed types (full + compact + title-only) when enabled so we use
+   * available vertical space before jumping to uniform title-only.
+   */
+  private assignCardsForGroup(group: ColumnGroup): void {
+    const overflowLen = group.overflowEvents?.length ?? 0;
+    const totalEventCount = group.events.length + overflowLen;
+
+    if (FEATURE_FLAGS.ENABLE_MIXED_CARD_TYPES && totalEventCount > 1) {
+      const combined: Event[] = [
+        ...group.events,
+        ...(Array.isArray(group.overflowEvents) ? group.overflowEvents : [])
+      ];
+      const mixedTypes = this.determineMixedCardTypes(combined);
+      group.cards = this.createIndividualCards(group, mixedTypes);
+      return;
+    }
+
+    const cardType = this.determineCardType(group);
+    group.cards = this.createIndividualCards(group, [cardType]);
+  }
+
+  /** Returns true when the group ended up with more than one distinct card type. */
+  private assignCardsForGroupAndDetectMixed(group: ColumnGroup): boolean {
+    this.assignCardsForGroup(group);
+    const types = new Set(group.cards.map(card => card.cardType));
+    return types.size > 1;
+  }
+
+  private describeGroupCardTypes(group: ColumnGroup): string {
+    const types = new Set(group.cards.map(card => card.cardType));
+    if (types.size === 0) return 'none';
+    if (types.size === 1) return group.cards[0]?.cardType ?? 'none';
+    return 'mixed';
   }
 
   /**
@@ -80,106 +116,34 @@ export class DegradationEngine {
     const clusters = this.identifySpatialClusters(groups);
     this.degradationMetrics.totalClusters = clusters.length;
 
-    // Phase 2: Apply coordinated degradation
+    // Phase 2: Apply per-side degradation (never use combined above+below counts)
     for (const cluster of clusters) {
       if (cluster.hasOverflow) {
-        // Phase 2a: Uniform degradation (overflow exists)
         this.degradationMetrics.clustersWithOverflow++;
-        const cardType = cluster.recommendedCardType;
-
-        if (cluster.aboveGroup) {
-          cluster.aboveGroup.cards = this.createIndividualCards(
-            cluster.aboveGroup,
-            [cardType] // Uniform card type
-          );
-        }
-
-        if (cluster.belowGroup) {
-          cluster.belowGroup.cards = this.createIndividualCards(
-            cluster.belowGroup,
-            [cardType] // Same uniform card type
-          );
-        }
-
-        // Track coordination event
-        this.degradationMetrics.clusterCoordinationEvents.push({
-          clusterId: cluster.id,
-          hasOverflow: true,
-          aboveCardType: cluster.aboveGroup ? cardType : 'none',
-          belowCardType: cluster.belowGroup ? cardType : 'none',
-          coordinationApplied: true
-        });
-
-      } else if (FEATURE_FLAGS.ENABLE_MIXED_CARD_TYPES) {
-        // Phase 2b: Mixed card types allowed (no overflow)
-        this.degradationMetrics.clustersWithMixedTypes++;
-
-        if (cluster.aboveGroup) {
-          // Count TOTAL events (primary + overflow) to determine correct card types
-          const overflowLen = cluster.aboveGroup.overflowEvents?.length ?? 0;
-          const totalEventCount = cluster.aboveGroup.events.length + overflowLen;
-
-          // Create mock array with total count for card type determination
-          const mockEvents = new Array(totalEventCount);
-          const mixedTypes = this.determineMixedCardTypes(mockEvents);
-
-          cluster.aboveGroup.cards = this.createIndividualCards(
-            cluster.aboveGroup,
-            mixedTypes // Can use mixed card types
-          );
-        }
-
-        if (cluster.belowGroup) {
-          // Count TOTAL events (primary + overflow) to determine correct card types
-          const overflowLen = cluster.belowGroup.overflowEvents?.length ?? 0;
-          const totalEventCount = cluster.belowGroup.events.length + overflowLen;
-
-          // Create mock array with total count for card type determination
-          const mockEvents = new Array(totalEventCount);
-          const mixedTypes = this.determineMixedCardTypes(mockEvents);
-
-          cluster.belowGroup.cards = this.createIndividualCards(
-            cluster.belowGroup,
-            mixedTypes // Can use mixed card types
-          );
-        }
-
-        // Track coordination event
-        this.degradationMetrics.clusterCoordinationEvents.push({
-          clusterId: cluster.id,
-          hasOverflow: false,
-          aboveCardType: cluster.aboveGroup ? 'mixed' : 'none',
-          belowCardType: cluster.belowGroup ? 'mixed' : 'none',
-          coordinationApplied: false
-        });
-
-      } else {
-        // Fallback: Use uniform degradation even when no overflow
-        const cardType = cluster.recommendedCardType;
-
-        if (cluster.aboveGroup) {
-          cluster.aboveGroup.cards = this.createIndividualCards(
-            cluster.aboveGroup,
-            [cardType]
-          );
-        }
-
-        if (cluster.belowGroup) {
-          cluster.belowGroup.cards = this.createIndividualCards(
-            cluster.belowGroup,
-            [cardType]
-          );
-        }
-
-        // Track coordination event
-        this.degradationMetrics.clusterCoordinationEvents.push({
-          clusterId: cluster.id,
-          hasOverflow: false,
-          aboveCardType: cluster.aboveGroup ? cardType : 'none',
-          belowCardType: cluster.belowGroup ? cardType : 'none',
-          coordinationApplied: false
-        });
       }
+
+      const aboveUsesMixed = cluster.aboveGroup
+        ? this.assignCardsForGroupAndDetectMixed(cluster.aboveGroup)
+        : false;
+      const belowUsesMixed = cluster.belowGroup
+        ? this.assignCardsForGroupAndDetectMixed(cluster.belowGroup)
+        : false;
+
+      if (aboveUsesMixed || belowUsesMixed) {
+        this.degradationMetrics.clustersWithMixedTypes++;
+      }
+
+      this.degradationMetrics.clusterCoordinationEvents.push({
+        clusterId: cluster.id,
+        hasOverflow: cluster.hasOverflow,
+        aboveCardType: cluster.aboveGroup
+          ? this.describeGroupCardTypes(cluster.aboveGroup)
+          : 'none',
+        belowCardType: cluster.belowGroup
+          ? this.describeGroupCardTypes(cluster.belowGroup)
+          : 'none',
+        coordinationApplied: false
+      });
     }
 
     return groups;
@@ -272,7 +236,7 @@ export class DegradationEngine {
   getMaxCardsPerHalfColumn(cardType: CardType): number {
     const cardConfig = this.config.cardConfigs;
     const cardHeight = cardConfig[cardType].height;
-    const cardSpacing = 12;
+    const cardSpacing = CARD_SPACING;
 
     // Use actual timelineY for accurate available height calculation
     const timelineY = this.config.timelineY || this.config.viewportHeight / 2;
@@ -316,34 +280,13 @@ export class DegradationEngine {
 
       if (below) processedBelow.add(below.id);
 
-      // Check cluster-wide overflow (both horizontal from DispatchEngine and predicted vertical)
+      // Only treat dispatch overflow as cluster overflow — predicted checks were
+      // forcing uniform title-only even when vertical space was available.
       const aboveOverflow = (above.overflowEvents?.length ?? 0) > 0;
       const belowOverflow = (below?.overflowEvents?.length ?? 0) > 0;
+      const hasOverflow = aboveOverflow || belowOverflow;
 
-      // PREDICT vertical overflow: check if total events exceed viewport-aware capacity
-      const aboveTotalEvents = above.events.length + (above.overflowEvents?.length ?? 0);
-      const belowTotalEvents = (below?.events.length ?? 0) + (below?.overflowEvents?.length ?? 0);
-      const titleOnlyCap = this.getMaxCardsPerHalfColumn('title-only');
-      const abovePredictedOverflow = aboveTotalEvents > titleOnlyCap;
-      const belowPredictedOverflow = belowTotalEvents > titleOnlyCap;
-
-      // Also check if events would exceed the capacity for the card type that would be chosen
-      // This catches cases where e.g. 4 events exceed compact capacity of 3
-      const compactCap = this.getMaxCardsPerHalfColumn('compact');
-      const fullCap = this.getMaxCardsPerHalfColumn('full');
-      const aboveWouldOverflowCompact = aboveTotalEvents > 2 && aboveTotalEvents <= 4 && aboveTotalEvents > compactCap;
-      const belowWouldOverflowCompact = belowTotalEvents > 2 && belowTotalEvents <= 4 && belowTotalEvents > compactCap;
-      const aboveWouldOverflowFull = aboveTotalEvents <= 2 && aboveTotalEvents > fullCap;
-      const belowWouldOverflowFull = belowTotalEvents <= 2 && belowTotalEvents > fullCap;
-
-      const hasOverflow = aboveOverflow || belowOverflow || abovePredictedOverflow || belowPredictedOverflow ||
-                         aboveWouldOverflowCompact || belowWouldOverflowCompact ||
-                         aboveWouldOverflowFull || belowWouldOverflowFull;
-
-      // Calculate total events
       const totalEvents = above.events.length + (below?.events.length ?? 0);
-
-      // Determine recommended uniform card type for cluster
       const recommendedCardType = this.determineUniformCardType(totalEvents);
 
       clusters.push({
@@ -387,15 +330,14 @@ export class DegradationEngine {
   }
 
   /**
-   * Determine uniform card type based on total event count
-   * Updated thresholds (v0.3.6.2 rollback):
+   * Determine uniform card type based on total event count (SDS spec):
    * - 1-2 events: full
-   * - 3 events: compact
-   * - 4+ events: title-only
+   * - 3-4 events: compact
+   * - 5+ events: title-only
    */
   private determineUniformCardType(eventCount: number): CardType {
     if (eventCount <= 2) return 'full';
-    if (eventCount === 3) return 'compact';
+    if (eventCount <= 4) return 'compact';
     return 'title-only';
   }
 
@@ -410,16 +352,19 @@ export class DegradationEngine {
    */
   private determineMixedCardTypes(events: Event[]): CardType[] {
     const count = events.length;
-    const fullCap = this.getMaxCardsPerHalfColumn('full');
     const compactCap = this.getMaxCardsPerHalfColumn('compact');
 
-    if (count <= fullCap) {
-      return ['full']; // Uniform full
+    // SDS event-count thresholds drive type selection; createIndividualCards
+    // enforces viewport capacity separately (visible vs overflow).
+    if (count <= 2) {
+      return ['full'];
     } else if (count === 3) {
       // Mixed: 1 full + 2 compact (chronological priority)
       return ['full', 'compact', 'compact'];
+    } else if (count <= 4) {
+      return ['compact'];
     } else if (count <= compactCap) {
-      return ['compact']; // Uniform compact
+      return ['compact'];
     } else if (count === 5) {
       // Mixed: 2 compact + 3 title-only
       return ['compact', 'compact', 'title-only', 'title-only', 'title-only'];
@@ -493,7 +438,7 @@ export class DegradationEngine {
    */
   private calculateMixedTypeCapacity(eventCount: number, cardTypes: CardType[]): number {
     const cardConfig = this.config.cardConfigs;
-    const cardSpacing = 12; // pixels between cards
+    const cardSpacing = CARD_SPACING; // pixels between cards
 
     // Use actual timelineY for accurate available height calculation
     // Must match PositioningEngine constants to avoid over-allocating cards that can't physically fit

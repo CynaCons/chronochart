@@ -1,45 +1,45 @@
 import { test, expect } from '@playwright/test';
 import { loginAsTestUser, loadTestTimeline } from '../utils/timelineTestUtils';
 
+/**
+ * Test 48: Title-only degradation
+ *
+ * Verifies that dense timelines degrade some cards to the title-only tier
+ * without overlaps, and that title-only cards never render a date.
+ *
+ * History: rewritten 2026-07-04. The original version seeded events into
+ * localStorage and visited `/` anonymously, which stopped reaching the editor
+ * after the Calm Modern relaunch (`/` now renders the marketing landing page
+ * for signed-out users). It now authenticates and loads the high-density
+ * `french-revolution` public timeline (250 events), which reliably produces
+ * title-only cards at the default zoom.
+ *
+ * @requirement CC-REQ-CARD-TITLE-ONLY
+ */
+
 test.describe('v5/48 Title-only degradation', () => {
+  test.beforeEach(async ({ page }) => {
+    await loginAsTestUser(page);
+    await loadTestTimeline(page, 'french-revolution'); // 250 events, high density
+    await expect(page.locator('[data-testid="event-card"]').first())
+      .toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(1000); // Stabilize rendering
+  });
+
   test('dense clusters trigger title-only cards without overlaps', async ({ page }) => {
     test.info().annotations.push({ type: 'req', description: 'CC-REQ-CARD-TITLE-ONLY' });
 
-    // Boot app once to ensure origin is set
-    await page.goto('/');
-
-    // Create a dense set of events clustered on the same day to exceed compact capacity
-    const baseDate = '2025-06-15';
-    const mk = (i: number) => ({
-      id: `dense-${i}`,
-      date: baseDate,
-      title: `Dense Event ${i+1}`,
-      description: `Dense event ${i+1}`
-    });
-    const denseEvents = [
-      // Anchor events to widen the global time range so dense items cluster spatially
-      { id: 'anchor-min', date: '2025-01-01', title: 'Anchor Min', description: 'Range anchor' },
-      { id: 'anchor-max', date: '2025-12-31', title: 'Anchor Max', description: 'Range anchor' },
-      // Dense cluster around mid-year
-      ...Array.from({ length: 12 }, (_, i) => mk(i))
-    ];
-
-    await page.evaluate((events) => {
-      localStorage.setItem('powertimeline-events', JSON.stringify(events));
-    }, denseEvents);
-
-    await page.reload();
-
     // Axis present
-    await expect(page.locator('[data-testid="timeline-axis"]')).toBeVisible();
+    await expect(page.locator('[data-testid="timeline-axis"]').first()).toBeVisible();
 
-    // Read telemetry for debugging and assertion
+    // Read telemetry for debugging
     const telemetry = await page.evaluate(() => (window as unknown as { __ccTelemetry?: unknown }).__ccTelemetry);
-     
-    console.log('telemetry.degradation', telemetry?.degradation);
+    console.log('telemetry.degradation', (telemetry as { degradation?: unknown })?.degradation);
+
     // Ensure at least one title-only card is rendered
     const titleOnly = page.locator('[data-testid="event-card"][data-card-type="title-only"]');
     const titleOnlyCount = await titleOnly.count();
+    console.log(`Rendered ${titleOnlyCount} title-only cards`);
     expect(titleOnlyCount).toBeGreaterThan(0);
 
     // VERIFY: Title-only cards display ONLY titles (no dates)

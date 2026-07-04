@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', '**/*.cjs', 'update_all_tests.js', 'functions/lib', 'powerspawn', 'coverage'] },
+  { ignores: ['dist', '**/dist/**', 'node_modules', '**/*.cjs', 'update_all_tests.js', 'functions/lib', 'powerspawn', 'coverage', '.claude', 'agent-tools', 'mcps', 'terminals', 'screenshots'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   // React/TypeScript application code (excludes tests and scripts)

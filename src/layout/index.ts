@@ -1,16 +1,12 @@
 // Core layout system exports
 export { DeterministicLayoutV5 as LayoutEngine } from './LayoutEngine';
-export { SlotGrid } from './SlotGrid';
 export { EventClustering } from './clustering';
 
 // Configuration and utilities
-export { 
-  createLayoutConfig, 
+export {
+  createLayoutConfig,
   updateLayoutConfigForViewport,
-  getAdaptiveCardConfigs,
-  calculateMaxSlotsPerCluster,
   getViewportCategory,
-  getViewportSpecificConfig,
   VIEWPORT_BREAKPOINTS
 } from './config';
 

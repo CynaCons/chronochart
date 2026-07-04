@@ -1,27 +1,35 @@
 import type { LayoutConfig, CardConfig, CardType } from './types';
+import { CARD_HEIGHTS } from './cardMetrics';
 
 // Default card configurations
+// Heights come from cardMetrics.ts, the single source of truth derived from
+// the typography contract in src/styles/index.css (see cardMetrics.ts for
+// the full derivation). Do not hardcode height numbers here.
 const DEFAULT_CARD_CONFIGS: Record<CardType, CardConfig> = {
   full: {
     type: 'full',
     width: 260, // Reduced from 280px to 260px
-    height: 169
+    height: CARD_HEIGHTS.full
   },
   compact: {
     type: 'compact',
     width: 260,
-    height: 120  // Increased from 82px to 120px to accommodate full content without overflow
+    height: CARD_HEIGHTS.compact
   },
   'title-only': {
     type: 'title-only',
     width: 260,
-    height: 32
+    height: CARD_HEIGHTS['title-only']
   },
 };
 
 // Card height in cells for capacity tracking (mixed card type support)
 // Used by DegradationEngine for greedy packing algorithm
-// Updated to match actual card heights: compact is 120px requiring 3 cells (132px with spacing)
+// Cell size is 44px (32px title-only card + 12px CARD_SPACING). Each type's
+// cell count is ceil((height + CARD_SPACING) / 44):
+//   full:       ceil((132 + 12) / 44) = 4
+//   compact:    ceil((90 + 12) / 44)  = 3
+//   title-only: ceil((32 + 12) / 44)  = 1
 export const CARD_HEIGHT_CELLS: Record<CardType, number> = {
   'full': 4,
   'compact': 3,
@@ -47,7 +55,6 @@ export function createLayoutConfig(
     clusterThreshold: 120, // Pixel distance for clustering events
     cardConfigs: DEFAULT_CARD_CONFIGS,
     columnSpacing: 20,     // Space between dual columns
-    rowSpacing: 20,        // Space between card rows
     ...customConfig
   };
 }
@@ -69,36 +76,6 @@ export function updateLayoutConfigForViewport(
   };
 }
 
-// Adaptive card sizing based on viewport
-export function getAdaptiveCardConfigs(viewportWidth: number, viewportHeight: number): Record<CardType, CardConfig> {
-  const scale = Math.min(viewportWidth / 1200, viewportHeight / 800); // Scale factor
-  const clampedScale = Math.max(0.7, Math.min(1.2, scale)); // Clamp between 70% and 120%
-
-  const configs = { ...DEFAULT_CARD_CONFIGS };
-  
-  // Scale all card sizes
-  Object.values(configs).forEach(config => {
-    config.width = Math.round(config.width * clampedScale);
-    config.height = Math.round(config.height * clampedScale);
-  });
-
-  return configs;
-}
-
-// Calculate maximum slots per cluster based on viewport
-export function calculateMaxSlotsPerCluster(config: LayoutConfig): {
-  singleColumn: number;
-  dualColumn: number;
-} {
-  const availableHeightPerSide = (config.viewportHeight / 2) - 50; // Leave margin for timeline
-  const slotsPerSide = Math.floor(availableHeightPerSide / (config.cardConfigs.full.height + config.rowSpacing));
-
-  return {
-    singleColumn: slotsPerSide * 2, // Above + below
-    dualColumn: slotsPerSide * 4    // (Above + below) * 2 columns
-  };
-}
-
 // Viewport breakpoints for different behaviors
 export const VIEWPORT_BREAKPOINTS = {
   mobile: 768,
@@ -114,50 +91,13 @@ export function getViewportCategory(width: number): keyof typeof VIEWPORT_BREAKP
   return 'mobile';
 }
 
-export function getViewportSpecificConfig(width: number, height: number): Partial<LayoutConfig> {
-  const category = getViewportCategory(width);
-
-  switch (category) {
-    case 'mobile':
-      return {
-        clusterThreshold: 80,
-        columnSpacing: 12,
-        rowSpacing: 8,
-        cardConfigs: getAdaptiveCardConfigs(width, height)
-      };
-    case 'tablet':
-      return {
-        clusterThreshold: 100,
-        columnSpacing: 16,
-        rowSpacing: 10,
-        cardConfigs: getAdaptiveCardConfigs(width, height)
-      };
-    case 'desktop':
-      return {
-        clusterThreshold: 120,
-        columnSpacing: 20,
-        rowSpacing: 20,
-        cardConfigs: DEFAULT_CARD_CONFIGS
-      };
-    case 'ultrawide':
-      return {
-        clusterThreshold: 140,
-        columnSpacing: 24,
-        rowSpacing: 20,
-        cardConfigs: DEFAULT_CARD_CONFIGS
-      };
-    default:
-      return {};
-  }
-}
-
 /**
  * Feature Flags for gradual rollout of new features
  *
  * ENABLE_CLUSTER_COORDINATION: Enables spatial cluster coordination for degradation
  * ENABLE_MIXED_CARD_TYPES: Enables mixed card types within clusters
- *   - Compact card height is 120px (increased from 82px to fix text clipping)
- *   - Compact cards use 3 cell footprint: 120px + 12px spacing = 132px (3×44px cells)
+ *   - Compact card height is 90px (see cardMetrics.ts for the typography-derived math)
+ *   - Compact cards use 3 cell footprint: 90px + 12px spacing = 102px, rounded up to 3×44px cells
  *   - Allows mixing full + compact + title-only with chronological priority
  *   - Only enabled when spatial cluster has NO overflow
  *

@@ -9,14 +9,14 @@
  */
 
 import type { CardType } from './types';
+import { CARD_HEIGHT_CELLS } from './config';
+import { CARD_HEIGHTS, CARD_SPACING } from './cardMetrics';
 
-// Card footprints in cells (vertical space consumed)
-// Calculated based on actual card heights + spacing (120px compact + 12px = 132px / 44px cell = 3 cells)
-export const CARD_FOOTPRINTS: Record<CardType, number> = {
-  'full': 4,        // Full card takes 4 cells (169px + 12px = 181px ≈ 4×44px = 176px)
-  'compact': 3,     // Compact card takes 3 cells (120px + 12px = 132px = 3×44px = 132px)
-  'title-only': 1   // Title-only card takes 1 cell (32px + 12px = 44px = 1×44px = 44px)
-};
+// Card footprints in cells (vertical space consumed).
+// Re-exported from config.ts's CARD_HEIGHT_CELLS (the single source of truth,
+// derived from cardMetrics.ts) instead of being redefined here — this used to
+// duplicate the same 4/3/1 values with its own stale comments.
+export const CARD_FOOTPRINTS: Record<CardType, number> = CARD_HEIGHT_CELLS;
 
 // Available placements per column side (above or below timeline)
 export const PLACEMENTS_PER_SIDE = 4; // 4 placement slots above, 4 below
@@ -29,11 +29,11 @@ export const LAYOUT_CONSTANTS = {
   /** Margin reserved for timeline axis and scale labels (prevents card/label overlap) */
   TIMELINE_MARGIN: 100, // pixels
 
-  /** Height of title-only card (matches config.ts DEFAULT_CARD_CONFIGS) */
-  TITLE_ONLY_CARD_HEIGHT: 32, // pixels
+  /** Height of title-only card (from cardMetrics.ts, matches config.ts DEFAULT_CARD_CONFIGS) */
+  TITLE_ONLY_CARD_HEIGHT: CARD_HEIGHTS['title-only'], // pixels
 
-  /** Vertical spacing between cards */
-  CARD_VERTICAL_SPACING: 12, // pixels
+  /** Vertical spacing between cards (from cardMetrics.ts CARD_SPACING) */
+  CARD_VERTICAL_SPACING: CARD_SPACING, // pixels
 
   /** Minimum cells per side (prevents broken layouts on tiny viewports) */
   MIN_CELLS_PER_SIDE: 3,
@@ -83,8 +83,8 @@ export class CapacityModel {
     const calculatedCells = Math.floor(availableHeight / cellUnit);
 
     // ENHANCEMENT: Add pixel-based validation
-    // A full card is 169px tall, so max realistic cards per side:
-    const fullCardWithSpacing = 169 + LAYOUT_CONSTANTS.CARD_VERTICAL_SPACING; // 181px
+    // A full card is CARD_HEIGHTS.full px tall (see cardMetrics.ts), so max realistic cards per side:
+    const fullCardWithSpacing = CARD_HEIGHTS.full + LAYOUT_CONSTANTS.CARD_VERTICAL_SPACING;
     const maxRealisticFullCards = Math.floor(availableHeight / fullCardWithSpacing);
 
     // Cap cells to prevent over-allocation (each full card = 4 cells)
