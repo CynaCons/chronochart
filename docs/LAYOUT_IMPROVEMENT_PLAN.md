@@ -217,7 +217,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 
 ---
 
-#### B4 — Positioning robustness: minimap clamp & recompaction gaps ⬜ TODO
+#### B4 — Positioning robustness: minimap clamp & recompaction gaps ✅ DONE
 **Priority:** P2 · **Depends on:** B1 · **Failure modes:** F7, F8
 
 **Problem.** Historically, the minimap safe-zone clamp (`y = 100`) could stack multiple cards at the same Y (overlapping slivers of text), and collision-resolution/recompaction can leave vertical gaps unrelated to content. With B1's shared budget these should be structurally prevented, but there is no test proving it.
@@ -228,10 +228,10 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 3. Instrument: if telemetry lacks per-column final Y positions, add them to `__ccTelemetry` (additive only).
 
 **Acceptance criteria.**
-- [ ] Dense-fixture test at 1280×720 (smallest desktop project) shows zero overlapping card pairs and no card intersecting the minimap safe zone.
-- [ ] Gap assertion passes on both desktop projects; all §2 gates pass.
+- [x] Dense-fixture test at 1280×720 shows zero overlapping card pairs and no card intersecting the minimap safe zone.
+- [x] Gap assertion passes on both desktop projects; all §2 gates pass.
 
-**Completion log:** —
+**Completion log:** 2026-07-05 (coordinator). Audit conclusion: the minimap clamp (`Math.max(MINIMAP_SAFE_ZONE, targetY)`) and recompaction paths are already correct — B1's shared budget + B2's `visible = min(N, K)` guarantee a half-column never over-allocates, so the clamp never stacks cards. **No PositioningEngine code change was needed.** Added `tests/editor/71-positioning-robustness.spec.ts` (T71.1), pinned to 1280×720 (tightest desktop), asserting on french-revolution: (1) zero overlapping card pairs, (2) no card top `< MINIMAP_SAFE_ZONE`, (3) intra-column vertical gaps within `[CARD_SPACING−2, CARD_SPACING+24]`. Result on both desktop projects: 30 cards, **0 overlaps, 0 intrusions, gaps exactly 12px (min=avg=max)** — recompaction introduces no irregular gaps. Telemetry step skipped: Y positions read directly from the DOM, so no `__ccTelemetry` addition was required.
 
 ---
 
@@ -291,6 +291,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 |------|--------|
 | 2026-07-04 | Plan created from Phase 1 findings (coordinator analysis of cardMetrics work, dead-code audit, test-suite review). |
 | 2026-07-05 | B1 ✅: `layoutBudget.ts` unifies the vertical-budget math (was 3 disagreeing copies). No-behavior-change refactor — degradation value identical, CapacityModel +2px (no boundary crossed), per-side asymmetry now explicit. Foundation for B2/B3/B4. |
+| 2026-07-05 | B4 ✅: positioning robustness — clamp/recompaction already correct (structurally prevented by B1/B2); added guard test `71-positioning-robustness` proving 0 overlaps, 0 minimap intrusions, uniform 12px gaps at 1280×720. No code change needed. |
 | 2026-07-05 | B3 ✅: above/below independence formalized — removed dead `recommendedCardType`/`determineUniformCardType`; user-approved rewrite of CC-REQ-CLUSTER-COORD-001 + CC-REQ-MIXED-TYPES-001 to independent per-side packing (resolves contradiction with CC-REQ-CAPACITY-INDEPENDENT-001). |
 | 2026-07-05 | B2 ✅: budget-driven `packHalfColumn` replaces count-recipes — visibility-first + earliest-richest staircase filling each side's cell budget. Title-only cap dropped (legacy physics, per user). Distribution improved (compact 2→5). Suites 39 (pre-existing) + 70 (recipe→invariants) repaired. B3 partly subsumed (per-side packing already independent); formal SRS reconciliation still pending user sign-off. |
 | 2026-07-04 | Phase A complete (A1–A5 all ✅). Dead slot-system code removed, test 48 repaired, eslint noise cleared (~15k→28), doc commands fixed, T104 hardened with 3 new blocks. A5.1 surfaced the F9-residual fill finding (§5) that seeds C1. All §2 gates green. Commit boundary before Phase B. |
