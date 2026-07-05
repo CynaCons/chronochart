@@ -14,6 +14,7 @@ import type { ColumnGroup } from '../LayoutEngine';
 import { CapacityModel, CARD_FOOTPRINTS } from '../CapacityModel';
 import { getEventTimestamp } from '../../lib/time';
 import { CARD_SPACING } from '../cardMetrics';
+import { AXIS_MARGIN_ABOVE, AXIS_MARGIN_BELOW, MINIMAP_SAFE_ZONE } from '../layoutBudget';
 
 export class PositioningEngine {
   private config: LayoutConfig;
@@ -61,8 +62,8 @@ export class PositioningEngine {
     // - We don't have dates below the timeline axis, so we can use a smaller margin there
     // - This gives more vertical space for cards above the timeline
     // - Safe zones (minimap/breadcrumb) are handled at source in config.ts via HEADER_SAFE_ZONE
-    const aboveTimelineMargin = 48; // spacing between above-cards and timeline axis (increased for breathing room)
-    const belowTimelineMargin = 55; // spacing below for timeline axis labels (month/year labels render at ~65px from axis top)
+    const aboveTimelineMargin = AXIS_MARGIN_ABOVE; // spacing between above-cards and timeline axis
+    const belowTimelineMargin = AXIS_MARGIN_BELOW; // spacing below for timeline axis labels (month/year labels)
     // Note: Anchor spacing constants are defined in createEventAnchors() where they're used
 
     for (const group of groups) {
@@ -119,7 +120,6 @@ export class PositioningEngine {
         // Start from timeline (already positioned with safe zone in config.ts) and stack upward (decreasing Y)
         let aboveY = this.timelineY - aboveTimelineMargin;
         aboveCards.forEach((card, index) => {
-          const MINIMAP_SAFE_ZONE = 100;
           let targetY = aboveY - card.height;
           targetY = Math.max(MINIMAP_SAFE_ZONE, targetY);
 
@@ -264,7 +264,7 @@ export class PositioningEngine {
    */
   private resolveCollisions(positionedCards: PositionedCard[]): void {
     // Safe zone boundaries to prevent overlap with UI elements
-    const SCREEN_TOP_BOUNDARY = 100; // Minimap safe zone - prevent overlap with minimap (0-100px)
+    const SCREEN_TOP_BOUNDARY = MINIMAP_SAFE_ZONE; // prevent overlap with minimap
     const LEFT_SAFE_ZONE = 200; // Breadcrumb area protection (left nav 56px + breadcrumb area 144px)
     const TOP_BREADCRUMB_ZONE = 120; // Only protect breadcrumb area in top region
     const resolveOverlaps = (items: PositionedCard[], preferRight = true) => {
@@ -279,7 +279,7 @@ export class PositioningEngine {
 
       // Viewport-adaptive collision resolution parameters
       const availableHeightAbove = this.timelineY - SCREEN_TOP_BOUNDARY;
-      const availableHeightBelow = this.config.viewportHeight - this.timelineY - 55; // 55px below margin
+      const availableHeightBelow = this.config.viewportHeight - this.timelineY - AXIS_MARGIN_BELOW;
       const isConstrainedViewport = availableHeightAbove < 500 || availableHeightBelow < 500;
 
       const spacing = isConstrainedViewport ? 4 : 8; // Tighter spacing for constrained viewports
@@ -435,9 +435,8 @@ export class PositioningEngine {
    */
   private recompactClusters(positionedCards: PositionedCard[]): void {
     const cardSpacing = CARD_SPACING;
-    const aboveTimelineMargin = 48;
-    const belowTimelineMargin = 55;
-    const MINIMAP_SAFE_ZONE = 100;
+    const aboveTimelineMargin = AXIS_MARGIN_ABOVE;
+    const belowTimelineMargin = AXIS_MARGIN_BELOW;
 
     // Group cards by clusterId
     const clusterMap = new Map<string, PositionedCard[]>();

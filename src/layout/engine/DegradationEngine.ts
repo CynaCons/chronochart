@@ -13,6 +13,7 @@ import type { LayoutConfig, PositionedCard, CardType } from '../types';
 import type { ColumnGroup, DegradationMetrics } from '../LayoutEngine';
 import { FEATURE_FLAGS } from '../config';
 import { CARD_SPACING } from '../cardMetrics';
+import { getHalfColumnBudget } from '../layoutBudget';
 
 export class DegradationEngine {
   private config: LayoutConfig;
@@ -238,11 +239,9 @@ export class DegradationEngine {
     const cardHeight = cardConfig[cardType].height;
     const cardSpacing = CARD_SPACING;
 
-    // Use actual timelineY for accurate available height calculation
-    const timelineY = this.config.timelineY || this.config.viewportHeight / 2;
-    const minimapSafeZone = 100;
-    const aboveTimelineMargin = 48;
-    const availableHeight = timelineY - minimapSafeZone - aboveTimelineMargin;
+    // Available vertical space for a half-column (single source of truth).
+    // Uses the `above` budget for the per-type cap, as it has always done.
+    const availableHeight = getHalfColumnBudget(this.config, 'above').pixels;
 
     // How many cards physically fit in the available space
     const maxBySpace = Math.max(1, Math.floor((availableHeight + cardSpacing) / (cardHeight + cardSpacing)));
@@ -440,12 +439,8 @@ export class DegradationEngine {
     const cardConfig = this.config.cardConfigs;
     const cardSpacing = CARD_SPACING; // pixels between cards
 
-    // Use actual timelineY for accurate available height calculation
-    // Must match PositioningEngine constants to avoid over-allocating cards that can't physically fit
-    const timelineY = this.config.timelineY || this.config.viewportHeight / 2;
-    const minimapSafeZone = 100;  // Same as SCREEN_TOP_BOUNDARY in PositioningEngine
-    const aboveTimelineMargin = 48; // Same as PositioningEngine line 63
-    const availableHeight = timelineY - minimapSafeZone - aboveTimelineMargin;
+    // Available vertical space for a half-column (single source of truth).
+    const availableHeight = getHalfColumnBudget(this.config, 'above').pixels;
 
     let accumulatedHeight = 0;
     let cardsFit = 0;

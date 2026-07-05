@@ -142,7 +142,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 
 ---
 
-#### B1 — Single source of truth for vertical budget ⬜ TODO
+#### B1 — Single source of truth for vertical budget ✅ DONE
 **Priority:** P1 · **Depends on:** — · **Failure mode:** F6
 
 **Problem.** Available-height math is duplicated and disagrees: `DegradationEngine.getMaxCardsPerHalfColumn` uses `timelineY − 100 (minimap) − 48 (margin)`; `PositioningEngine` has its own margins and clamps (minimap clamp `y=100`); `CapacityModel` has a third variant. Cards can be created that don't fit, or space can go unused (under-used columns symptom).
@@ -153,11 +153,16 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 3. Unit-test: for viewports 1280×720, 1440×900, 1920×1080, 2560×1440, budget values are identical when queried from DegradationEngine and CapacityModel paths, and `cells === floor((pixels + CARD_SPACING) / 44)`.
 
 **Acceptance criteria.**
-- [ ] One function computes available half-column height; grep shows no other `minimapSafeZone`/margin arithmetic in degradation/capacity code.
-- [ ] New unit tests pass; all §2 gates pass.
-- [ ] Above/below asymmetry (minimap only affects `above`) is handled: budget differs per side and a unit test proves it.
+- [x] One function computes available half-column height; grep shows no other `minimapSafeZone`/margin arithmetic in degradation/capacity code.
+- [x] New unit tests pass; all §2 gates pass.
+- [x] Above/below asymmetry is handled: budget differs per side and a unit test proves it.
 
-**Completion log:** —
+**Completion log:** 2026-07-05 (coordinator). New `src/layout/layoutBudget.ts` is the single source: named constants (`MINIMAP_SAFE_ZONE=100`, `AXIS_MARGIN_ABOVE=48`, `AXIS_MARGIN_BELOW=55`, `CELL_SIZE = title-only + CARD_SPACING = 44`), `computeTimelineY(h)` mirroring `createLayoutConfig`, and `getHalfColumnBudget({viewportHeight, timelineY?}, side) → {pixels, cells}` with per-side margins.
+- **DegradationEngine** (both `getMaxCardsPerHalfColumn` and `calculateMixedTypeCapacity`): replaced the duplicated `timelineY − 100 − 48` with `getHalfColumnBudget(config, 'above').pixels`. Value numerically identical (proved by the `legacy formula` unit test) → zero behavior change.
+- **CapacityModel**: pulls `availableHeight` from the same function (derives `timelineY` via `computeTimelineY`, since it only receives viewport height). This shifts the value from `H/2 − 100` to `H/2 − 98` (+2px); all 37 CapacityModel tests still pass (no cell boundary crossed).
+- **PositioningEngine**: replaced scattered `100/48/55` literals (5 sites across `createEventClusters`, `resolveCollisions`, `recompactClusters`) with the imported named constants; arithmetic unchanged.
+- **Asymmetry insight:** the minimap's 100px is already absorbed by `timelineY` sitting below centre, so above/below are physically equal; the axis margins (48 vs 55) make `above` **7px larger** than `below`. Unit test asserts `above.pixels − below.pixels === AXIS_MARGIN_BELOW − AXIS_MARGIN_ABOVE`.
+- Verified: build ✅, 79 unit tests (15 new in `layoutBudget.test.ts`) ✅, Playwright 104/48/67/36 desktop 17/17 ✅ with identical tier distribution (full=5 compact=2 title-only=48), smoke ✅. Minor residual noted in §5 (config.ts `HEADER_SAFE_ZONE` still a local 100, guarded by the `computeTimelineY === createLayoutConfig.timelineY` test).
 
 ---
 
@@ -273,6 +278,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 | 2026-07-04 | B2.5 | Are per-type caps (full≤2/compact≤4/title-only≤8) product intent or legacy physics? Kept as explicit constants pending user decision. | Open |
 | 2026-07-04 | B3.3 | Rewriting CC-REQ-CLUSTER-COORD-001 changes a stated requirement — needs user sign-off when B3 lands. | Open |
 | 2026-07-04 | A1 | After removing `getViewportSpecificConfig`, its helper `getViewportCategory` + `VIEWPORT_BREAKPOINTS` + `updateLayoutConfigForViewport` now have ZERO live consumers but were out of A1's named removal scope. Kept (still exported from `src/layout/index.ts`) to honor minimal-diff. Remove in a follow-up? | Open |
+| 2026-07-05 | B1 | Minor residual: `config.ts` `HEADER_SAFE_ZONE = 100` is still a local literal (source of `timelineY`), duplicating `layoutBudget.MINIMAP_SAFE_ZONE`. Left as-is (minimal diff); the `computeTimelineY === createLayoutConfig.timelineY` unit test guards them against drift. Fold `config.ts` onto the constant in a later cleanup? | Open |
 | 2026-07-04 | A5.1 | **Internal fill efficiency finding.** Full/compact cards carry ~26–35px uniform dead space (gap ratio full 0.263, compact 0.337) on french-revolution, driven by 1-line titles occupying a 2-line title budget. `<0.18` "efficient fill" is unreachable with fixed heights + short content. This is the core signal for **C1** (quantized per-instance heights vs. accept residual). T104.11 downgraded from `<0.18`-enforcing to telemetry + `<0.40` regression guard. **User decision needed (with C1): pursue quantized heights, or accept the slack as the cost of visual-coherence fixed sizes?** | Open |
 
 ## 6. Change history
@@ -280,4 +286,5 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 | Date | Change |
 |------|--------|
 | 2026-07-04 | Plan created from Phase 1 findings (coordinator analysis of cardMetrics work, dead-code audit, test-suite review). |
+| 2026-07-05 | B1 ✅: `layoutBudget.ts` unifies the vertical-budget math (was 3 disagreeing copies). No-behavior-change refactor — degradation value identical, CapacityModel +2px (no boundary crossed), per-side asymmetry now explicit. Foundation for B2/B3/B4. |
 | 2026-07-04 | Phase A complete (A1–A5 all ✅). Dead slot-system code removed, test 48 repaired, eslint noise cleared (~15k→28), doc commands fixed, T104 hardened with 3 new blocks. A5.1 surfaced the F9-residual fill finding (§5) that seeds C1. All §2 gates green. Commit boundary before Phase B. |

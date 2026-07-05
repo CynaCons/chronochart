@@ -11,6 +11,7 @@
 import type { CardType } from './types';
 import { CARD_HEIGHT_CELLS } from './config';
 import { CARD_HEIGHTS, CARD_SPACING } from './cardMetrics';
+import { getHalfColumnBudget, computeTimelineY } from './layoutBudget';
 
 // Card footprints in cells (vertical space consumed).
 // Re-exported from config.ts's CARD_HEIGHT_CELLS (the single source of truth,
@@ -76,9 +77,13 @@ export class CapacityModel {
   private columns: Map<string, ColumnCapacity> = new Map();
 
   constructor(viewportHeight: number) {
-    // Calculate available vertical space for cards
-    // Formula: (viewport_half - timeline_margin) / (card_height + spacing)
-    const availableHeight = (viewportHeight / 2) - LAYOUT_CONSTANTS.TIMELINE_MARGIN;
+    // Available vertical space for a half-column (single source of truth in
+    // layoutBudget.ts). CapacityModel only knows the viewport height, so it
+    // derives the axis position the same way createLayoutConfig does.
+    const availableHeight = getHalfColumnBudget(
+      { viewportHeight, timelineY: computeTimelineY(viewportHeight) },
+      'above'
+    ).pixels;
     const cellUnit = LAYOUT_CONSTANTS.TITLE_ONLY_CARD_HEIGHT + LAYOUT_CONSTANTS.CARD_VERTICAL_SPACING;
     const calculatedCells = Math.floor(availableHeight / cellUnit);
 
