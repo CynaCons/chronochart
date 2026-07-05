@@ -239,7 +239,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 
 ---
 
-#### C1 — Decide: quantized per-card line-budget heights ⬜ TODO
+#### C1 — Decide: quantized per-card line-budget heights ✅ DONE (analysis) · decision pending user
 **Priority:** P3 · **Depends on:** A5, B2
 
 **Problem.** Even with derived heights, a full card with a 1-line title and no description carries ~1–3 lines of slack (F9 residual). Option 9.3 (quantized heights: e.g. `full` with a measured 1-line description gets a shorter box) would fix it but makes heights per-instance, touching capacity/collision math.
@@ -247,9 +247,9 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 **Spec.** This is an ANALYSIS item, not implementation. Using A5's gap-ratio telemetry on 3 production-like timelines (Iran War, French Revolution, and the densest test fixture): report the distribution of internal gap ratios per card type. Produce a recommendation in a short markdown note (`docs/analysis/quantized-heights-decision.md`): implement quantized heights (with a sketch: measurement strategy, cache, cell mapping) or close F9-residual as acceptable (< 15% gap on ≥ 90% of cards). The user decides; record the question in §5.
 
 **Acceptance criteria.**
-- [ ] Analysis note exists with real measured numbers and a clear recommendation; no production code changed.
+- [x] Analysis note exists with real measured numbers and a clear recommendation; no production code changed.
 
-**Completion log:** —
+**Completion log:** 2026-07-05 (coordinator). Measured post-B2 gap ratios on 3 real timelines via new `tests/editor/72-fill-efficiency-analysis.spec.ts`: full **0.263–0.390** (~35–52px dead space), compact **0.337** (~30px); **0% of 33 sampled cards** meet the <15% target; **100% render 1-line titles** (the 2-line title budget is never used). Wrote `docs/analysis/quantized-heights-decision.md` with the data + four options (accept / re-derive for 1-line title / full per-instance quantization / few variants). **Recommendation: Option B** (re-derive heights for a 1-line title — reclaims the universal ~17px while keeping fixed-size coherence + the whole-cell model — gated on a truncation-safety check for rare long titles). **Awaiting user decision** (§5); implementation would be a new follow-up item, not part of C1.
 
 ---
 
@@ -283,6 +283,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 | 2026-07-04 | B3.3 | Rewriting CC-REQ-CLUSTER-COORD-001 changes a stated requirement — needs user sign-off when B3 lands. | **Resolved 2026-07-05**: user approved. CC-REQ-CLUSTER-COORD-001 + CC-REQ-MIXED-TYPES-001 rewritten to independent per-side packing. |
 | 2026-07-04 | A1 | After removing `getViewportSpecificConfig`, its helper `getViewportCategory` + `VIEWPORT_BREAKPOINTS` + `updateLayoutConfigForViewport` now have ZERO live consumers but were out of A1's named removal scope. Kept (still exported from `src/layout/index.ts`) to honor minimal-diff. Remove in a follow-up? | Open |
 | 2026-07-05 | B1 | Minor residual: `config.ts` `HEADER_SAFE_ZONE = 100` is still a local literal (source of `timelineY`), duplicating `layoutBudget.MINIMAP_SAFE_ZONE`. Left as-is (minimal diff); the `computeTimelineY === createLayoutConfig.timelineY` unit test guards them against drift. Fold `config.ts` onto the constant in a later cleanup? | Open |
+| 2026-07-05 | C1 | **Fill-efficiency decision — needs your call.** Measured across 3 timelines: full 26–39% / compact 34% internal dead space, 0% under the 15% target, 100% of cards use 1-line titles (2-line budget wasted universally). Options + recommendation (Option B: re-derive heights for a 1-line title) in `docs/analysis/quantized-heights-decision.md`. **Which option — A/B/C/D?** | Open (analysis done) |
 | 2026-07-04 | A5.1 | **Internal fill efficiency finding.** Full/compact cards carry ~26–35px uniform dead space (gap ratio full 0.263, compact 0.337) on french-revolution, driven by 1-line titles occupying a 2-line title budget. `<0.18` "efficient fill" is unreachable with fixed heights + short content. This is the core signal for **C1** (quantized per-instance heights vs. accept residual). T104.11 downgraded from `<0.18`-enforcing to telemetry + `<0.40` regression guard. **User decision needed (with C1): pursue quantized heights, or accept the slack as the cost of visual-coherence fixed sizes?** | Open |
 
 ## 6. Change history
@@ -291,6 +292,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 |------|--------|
 | 2026-07-04 | Plan created from Phase 1 findings (coordinator analysis of cardMetrics work, dead-code audit, test-suite review). |
 | 2026-07-05 | B1 ✅: `layoutBudget.ts` unifies the vertical-budget math (was 3 disagreeing copies). No-behavior-change refactor — degradation value identical, CapacityModel +2px (no boundary crossed), per-side asymmetry now explicit. Foundation for B2/B3/B4. |
+| 2026-07-05 | C1 ✅ (analysis): measured 26–39% internal dead space across 3 timelines (0% under 15% target; 100% 1-line titles). `docs/analysis/quantized-heights-decision.md` recommends Option B (re-derive for 1-line title). Decision pending user. |
 | 2026-07-05 | B4 ✅: positioning robustness — clamp/recompaction already correct (structurally prevented by B1/B2); added guard test `71-positioning-robustness` proving 0 overlaps, 0 minimap intrusions, uniform 12px gaps at 1280×720. No code change needed. |
 | 2026-07-05 | B3 ✅: above/below independence formalized — removed dead `recommendedCardType`/`determineUniformCardType`; user-approved rewrite of CC-REQ-CLUSTER-COORD-001 + CC-REQ-MIXED-TYPES-001 to independent per-side packing (resolves contradiction with CC-REQ-CAPACITY-INDEPENDENT-001). |
 | 2026-07-05 | B2 ✅: budget-driven `packHalfColumn` replaces count-recipes — visibility-first + earliest-richest staircase filling each side's cell budget. Title-only cap dropped (legacy physics, per user). Distribution improved (compact 2→5). Suites 39 (pre-existing) + 70 (recipe→invariants) repaired. B3 partly subsumed (per-side packing already independent); formal SRS reconciliation still pending user sign-off. |
