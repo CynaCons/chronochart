@@ -53,9 +53,8 @@ export interface SpatialCluster {
   };
   aboveGroup: ColumnGroup | null;
   belowGroup: ColumnGroup | null;
-  hasOverflow: boolean;        // True if ANY half-column has overflow
-  totalEvents: number;          // Combined event count
-  recommendedCardType: import('./types').CardType; // Uniform card type for cluster
+  hasOverflow: boolean;        // True if ANY half-column has overflow (telemetry/badge only)
+  totalEvents: number;          // Combined event count (telemetry only)
 }
 
 export interface DispatchMetrics {

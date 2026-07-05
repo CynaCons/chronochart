@@ -181,4 +181,19 @@ describe('DegradationEngine — B2 budget-driven packing', () => {
   it('is deterministic — identical inputs yield identical packing', () => {
     expect(packedTypes(engineForK(12), 7)).toEqual(packedTypes(engineForK(12), 7));
   });
+
+  it('B3: a sparse below is not degraded by a crowded above (independent per-side)', () => {
+    const engine = new DegradationEngine(createLayoutConfig(1440, 900));
+    const above = makeGroup('above-1', 'above', Array.from({ length: 8 }, (_, i) => makeEvent(`a${i}`)));
+    const below = makeGroup('below-1', 'below', [makeEvent('b1')]);
+
+    const result = engine.applyDegradationAndPromotion([above, below]);
+    const belowCards = result.find(g => g.id === 'below-1')!.cards.map(c => c.cardType);
+    const aboveCards = result.find(g => g.id === 'above-1')!.cards;
+
+    // The lone below event stays a full card — the crowded above does not drag it down.
+    expect(belowCards).toEqual(['full']);
+    // The above half-column packs its own budget independently (many cards).
+    expect(aboveCards.length).toBeGreaterThan(1);
+  });
 });

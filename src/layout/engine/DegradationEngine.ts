@@ -258,7 +258,6 @@ export class DegradationEngine {
       const hasOverflow = aboveOverflow || belowOverflow;
 
       const totalEvents = above.events.length + (below?.events.length ?? 0);
-      const recommendedCardType = this.determineUniformCardType(totalEvents);
 
       clusters.push({
         id: `cluster-${above.centerX}`,
@@ -270,8 +269,7 @@ export class DegradationEngine {
         aboveGroup: above,
         belowGroup: below ?? null,
         hasOverflow,
-        totalEvents,
-        recommendedCardType
+        totalEvents
       });
     }
 
@@ -280,7 +278,6 @@ export class DegradationEngine {
     for (const below of orphanBelowGroups) {
       const hasOverflow = (below.overflowEvents?.length ?? 0) > 0;
       const totalEvents = below.events.length;
-      const recommendedCardType = this.determineUniformCardType(totalEvents);
 
       clusters.push({
         id: `cluster-${below.centerX}`,
@@ -292,24 +289,11 @@ export class DegradationEngine {
         aboveGroup: null,
         belowGroup: below,
         hasOverflow,
-        totalEvents,
-        recommendedCardType
+        totalEvents
       });
     }
 
     return clusters;
-  }
-
-  /**
-   * Determine uniform card type based on total event count (SDS spec):
-   * - 1-2 events: full
-   * - 3-4 events: compact
-   * - 5+ events: title-only
-   */
-  private determineUniformCardType(eventCount: number): CardType {
-    if (eventCount <= 2) return 'full';
-    if (eventCount <= 4) return 'compact';
-    return 'title-only';
   }
 
   /**

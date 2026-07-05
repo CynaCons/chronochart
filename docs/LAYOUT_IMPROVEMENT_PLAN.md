@@ -197,7 +197,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 
 ---
 
-#### B3 — Decouple above/below half-column degradation ⬜ TODO
+#### B3 — Decouple above/below half-column degradation ✅ DONE
 **Priority:** P1 · **Depends on:** B2 · **Failure mode:** F5
 
 **Problem.** `identifySpatialClusters` computes `recommendedCardType` from `above.events + below.events` combined, and cluster overflow flags can force uniform degradation across both half-columns. A crowded `above` shouldn't degrade a sparse `below`. Note tension: SRS `CC-REQ-CLUSTER-COORD-001` currently MANDATES uniform cluster degradation on any overflow, while `CC-REQ-CAPACITY-INDEPENDENT-001` mandates independent capacity. The product intent (per CARD_TEXT_FITTING_PROBLEM.md §4/§8) is independence except where a real shared constraint exists.
@@ -209,11 +209,11 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 4. Update suite 67 expectations if they encode the old uniform-coupling behavior; justify each change.
 
 **Acceptance criteria.**
-- [ ] Unit test: above column with 8 events + below column with 1 event in the same cluster → below shows 1 `full` card, above packs per B2.
-- [ ] No overlaps introduced: suites 36/48/67 + T104 bounds checks pass.
-- [ ] SRS changes listed in §5 and change history; all §2 gates pass.
+- [x] Unit test: above column with 8 events + below column with 1 event → below shows 1 `full` card, above packs per B2 (`DegradationEngine.test.ts` "B3: a sparse below is not degraded by a crowded above").
+- [x] No overlaps introduced: suites 36/48/67 + T104 bounds checks pass (17/17, distribution unchanged full=5 compact=5 title-only=51).
+- [x] SRS changes listed in §5 and change history; all §2 gates pass.
 
-**Completion log:** —
+**Completion log:** 2026-07-05 (coordinator). Independence was already achieved in code by B2 (`assignCardsForGroup` runs per half-column group). This item finished the cleanup + spec reconciliation: (1) removed the dead `recommendedCardType` field (`SpatialCluster`) and `determineUniformCardType` — computed from combined above+below counts but never read by any decision or render path (grep-confirmed); clusters now carry only `hasOverflow`/`totalEvents` for telemetry/badge use. (2) **User-approved requirement rewrite:** `CC-REQ-CLUSTER-COORD-001` ("both sides degrade uniformly on any overflow") and `CC-REQ-MIXED-TYPES-001` ("mixed only when no cluster overflow") rewritten to describe independent per-side packing, resolving the standing contradiction with `CC-REQ-CAPACITY-INDEPENDENT-001`. Suite 67 needed no expectation change (already passing under B2). Verified: build, 134 unit tests, lint 0 errors, Playwright 104/48/67/36, smoke.
 
 ---
 
@@ -280,7 +280,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 | Date | Item | Question / finding | Status |
 |------|------|--------------------|--------|
 | 2026-07-04 | B2.5 | Are per-type caps (full≤2/compact≤4/title-only≤8) product intent or legacy physics? | **Resolved 2026-07-05**: legacy physics (user). Title-only cap dropped (budget-limited); `full≤2`/`compact≤4` kept as soft `DENSITY_CAPS`. |
-| 2026-07-04 | B3.3 | Rewriting CC-REQ-CLUSTER-COORD-001 changes a stated requirement — needs user sign-off when B3 lands. | Open |
+| 2026-07-04 | B3.3 | Rewriting CC-REQ-CLUSTER-COORD-001 changes a stated requirement — needs user sign-off when B3 lands. | **Resolved 2026-07-05**: user approved. CC-REQ-CLUSTER-COORD-001 + CC-REQ-MIXED-TYPES-001 rewritten to independent per-side packing. |
 | 2026-07-04 | A1 | After removing `getViewportSpecificConfig`, its helper `getViewportCategory` + `VIEWPORT_BREAKPOINTS` + `updateLayoutConfigForViewport` now have ZERO live consumers but were out of A1's named removal scope. Kept (still exported from `src/layout/index.ts`) to honor minimal-diff. Remove in a follow-up? | Open |
 | 2026-07-05 | B1 | Minor residual: `config.ts` `HEADER_SAFE_ZONE = 100` is still a local literal (source of `timelineY`), duplicating `layoutBudget.MINIMAP_SAFE_ZONE`. Left as-is (minimal diff); the `computeTimelineY === createLayoutConfig.timelineY` unit test guards them against drift. Fold `config.ts` onto the constant in a later cleanup? | Open |
 | 2026-07-04 | A5.1 | **Internal fill efficiency finding.** Full/compact cards carry ~26–35px uniform dead space (gap ratio full 0.263, compact 0.337) on french-revolution, driven by 1-line titles occupying a 2-line title budget. `<0.18` "efficient fill" is unreachable with fixed heights + short content. This is the core signal for **C1** (quantized per-instance heights vs. accept residual). T104.11 downgraded from `<0.18`-enforcing to telemetry + `<0.40` regression guard. **User decision needed (with C1): pursue quantized heights, or accept the slack as the cost of visual-coherence fixed sizes?** | Open |
@@ -291,5 +291,6 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 |------|--------|
 | 2026-07-04 | Plan created from Phase 1 findings (coordinator analysis of cardMetrics work, dead-code audit, test-suite review). |
 | 2026-07-05 | B1 ✅: `layoutBudget.ts` unifies the vertical-budget math (was 3 disagreeing copies). No-behavior-change refactor — degradation value identical, CapacityModel +2px (no boundary crossed), per-side asymmetry now explicit. Foundation for B2/B3/B4. |
+| 2026-07-05 | B3 ✅: above/below independence formalized — removed dead `recommendedCardType`/`determineUniformCardType`; user-approved rewrite of CC-REQ-CLUSTER-COORD-001 + CC-REQ-MIXED-TYPES-001 to independent per-side packing (resolves contradiction with CC-REQ-CAPACITY-INDEPENDENT-001). |
 | 2026-07-05 | B2 ✅: budget-driven `packHalfColumn` replaces count-recipes — visibility-first + earliest-richest staircase filling each side's cell budget. Title-only cap dropped (legacy physics, per user). Distribution improved (compact 2→5). Suites 39 (pre-existing) + 70 (recipe→invariants) repaired. B3 partly subsumed (per-side packing already independent); formal SRS reconciliation still pending user sign-off. |
 | 2026-07-04 | Phase A complete (A1–A5 all ✅). Dead slot-system code removed, test 48 repaired, eslint noise cleared (~15k→28), doc commands fixed, T104 hardened with 3 new blocks. A5.1 surfaced the F9-residual fill finding (§5) that seeds C1. All §2 gates green. Commit boundary before Phase B. |
