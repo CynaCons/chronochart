@@ -11,8 +11,8 @@
 import type { Event } from '../../types';
 import type { LayoutConfig, PositionedCard, CardType } from '../types';
 import type { ColumnGroup, DegradationMetrics } from '../LayoutEngine';
-import { FEATURE_FLAGS, CARD_HEIGHT_CELLS } from '../config';
-import { CARD_SPACING } from '../cardMetrics';
+import { FEATURE_FLAGS } from '../config';
+import { CARD_SPACING, quantizedCardHeight, contentLinesFor, heightForLines } from '../cardMetrics';
 import { getHalfColumnBudget } from '../layoutBudget';
 
 /**
@@ -101,7 +101,7 @@ export class DegradationEngine {
     }
 
     const types = FEATURE_FLAGS.ENABLE_MIXED_CARD_TYPES
-      ? this.packHalfColumn(combined.length, group.side)
+      ? this.packHalfColumn(combined, group.side)
       : this.packUniform(combined.length);
 
     group.cards = this.buildCards(group, combined, types);
@@ -317,30 +317,53 @@ export class DegradationEngine {
    *
    * Deterministic: identical (N, side, config) always yields the same array.
    */
-  private packHalfColumn(n: number, side: 'above' | 'below'): CardType[] {
-    const K = getHalfColumnBudget(this.config, side).cells;
-    if (K <= 0 || n <= 0) return [];
+  private packHalfColumn(events: Event[], side: 'above' | 'below'): CardType[] {
+    const K = getHalfColumnBudget(this.config, side).pixels; // C3: pixel budget, not cells
+    const n = events.length;
+    if (K <= 0 || n === 0) return [];
 
-    const cost = CARD_HEIGHT_CELLS; // { full: 4, compact: 3, 'title-only': 1 }
-    const visible = Math.min(n, Math.floor(K / cost['title-only'])); // = min(n, K)
-    const types: CardType[] = new Array(visible).fill('title-only');
-    let usedCells = visible * cost['title-only'];
+    // Measured height of event i rendered at a given tier (per-instance, C3).
+    const heightAt = (i: number, tier: CardType) =>
+      quantizedCardHeight(events[i].title, events[i].description, tier);
 
-    // Upgrade rounds, richest last. Each raises a prefix of cards one tier.
+    // Running stack height including the CARD_SPACING gap before each card
+    // after the first.
+    const withGap = (h: number, isFirst: boolean) => h + (isFirst ? 0 : CARD_SPACING);
+
+    // Visibility first: include as many events as physically fit, all title-only.
+    // Because title-only cards are the shortest, this maximizes visible count.
+    const types: CardType[] = [];
+    let used = 0;
+    for (let i = 0; i < n; i++) {
+      const add = withGap(heightAt(i, 'title-only'), types.length === 0);
+      if (used + add > K) break;
+      types.push('title-only');
+      used += add;
+    }
+    if (types.length === 0) {
+      // Degenerate tiny budget — still show the earliest event (min-1, as before).
+      return ['title-only'];
+    }
+    const visible = types.length;
+
+    // Upgrade rounds spend the leftover budget on the earliest cards. With
+    // per-instance heights, a shorter (sparser) card costs fewer pixels to
+    // upgrade, so more cards can be enriched than under fixed heights
+    // (this is the "re-pack to fill" the freed space).
     const rounds: Array<{ from: CardType; to: CardType; cap: number }> = [
       { from: 'title-only', to: 'compact', cap: DENSITY_CAPS.compact },
       { from: 'compact', to: 'full', cap: DENSITY_CAPS.full },
     ];
 
     for (const round of rounds) {
-      const delta = cost[round.to] - cost[round.from];
       let upgraded = 0;
       for (let i = 0; i < visible; i++) {
-        if (types[i] !== round.from) continue; // already past this tier (or a later, cheaper card)
-        if (upgraded >= round.cap) break; // tier density ceiling reached
-        if (usedCells + delta > K) break; // no budget left — stop (no skipping)
+        if (types[i] !== round.from) continue;
+        if (upgraded >= round.cap) break; // tier density ceiling
+        const delta = heightAt(i, round.to) - heightAt(i, round.from);
+        if (used + delta > K) break; // no budget left — stop (no skipping)
         types[i] = round.to;
-        usedCells += delta;
+        used += delta;
         upgraded++;
       }
     }
@@ -350,20 +373,28 @@ export class DegradationEngine {
 
   /**
    * Build the positioned cards for a group from an explicit per-position type
-   * list (length = visible count). Remaining events become overflow.
+   * list (length = visible count). Each card is sized to its measured content
+   * (C3 quantized heights) and carries its predicted line counts so the render
+   * can set a matching clamp. Remaining events become overflow.
    */
   private buildCards(group: ColumnGroup, combined: Event[], types: CardType[]): PositionedCard[] {
     const cardConfig = this.config.cardConfigs;
-    const cards: PositionedCard[] = types.map((cardType, index) => ({
-      id: `${group.id}-${index}`,
-      event: combined[index],
-      x: 0,
-      y: 0,
-      width: cardConfig[cardType].width,
-      height: cardConfig[cardType].height,
-      cardType,
-      clusterId: group.id,
-    }));
+    const cards: PositionedCard[] = types.map((cardType, index) => {
+      const event = combined[index];
+      const { titleLines, descLines } = contentLinesFor(event.title, event.description, cardType);
+      return {
+        id: `${group.id}-${index}`,
+        event,
+        x: 0,
+        y: 0,
+        width: cardConfig[cardType].width,
+        height: heightForLines(cardType, titleLines, descLines),
+        cardType,
+        clusterId: group.id,
+        titleLines,
+        descLines,
+      };
+    });
 
     const remainder = combined.slice(types.length);
     group.overflowEvents = remainder.length > 0 ? remainder : undefined;

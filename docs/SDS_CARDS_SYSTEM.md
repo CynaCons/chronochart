@@ -8,7 +8,7 @@ This document provides the technical design specification for the card system, d
 
 All card types share a universal width for visual consistency:
 
-| Card Type | Width | Height | Content |
+| Card Type | Width | Max height | Content |
 |---|---|---|---|
 | **Full** | 260px | 132px | Title (≤2 lines) + Description (≤3 lines) + Date |
 | **Compact** | 260px | 90px | Title (≤2 lines) + Description (≤1 line) + Date |
@@ -16,7 +16,7 @@ All card types share a universal width for visual consistency:
 
 **Source**: `src/layout/cardMetrics.ts` (single source of truth; consumed by `src/layout/config.ts` `DEFAULT_CARD_CONFIGS`).
 
-Heights are **derived from the typography contract**, not chosen by hand: `height = title lines × 17.5px + gap + description lines × 16.8px + gap + date 14.4px + padding + 2px border` (border-box), rounded up with a 1–2px safety margin. The unit test `src/layout/cardMetrics.test.ts` fails if the configured heights drift from this derivation.
+The heights above are the **worst-case maximums** (2-line title + full description). As of C3 (2026-07-05) each card is sized **per-instance** to its measured content: `quantizedCardHeight(title, description, type)` predicts the rendered title/description line counts (`textMeasure.ts`) and derives a height ≤ the max above via `height = title lines × 17.5px + gap + description lines × 16.8px + gap + date 14.4px + padding + 2px border` (border-box, +2px margin). The renderer sets each card's `-webkit-line-clamp` + `max-height` to the **same** measured line counts, so the box and clamp always agree and text truncates (ellipsis) rather than overflowing. This eliminates the F9 internal dead space (measured gap ratio dropped from ~0.26–0.39 to ~0.15–0.18, the padding+border floor). The drift-guard `cardMetrics.test.ts` still pins the worst-case values; `quantizedHeight.test.ts` covers the per-instance derivation.
 
 ### 1.2 Content Layout Rules
 
@@ -1095,4 +1095,5 @@ applyDegradationAndPromotion(groups: ColumnGroup[]): ColumnGroup[] {
 - 2025-10-01 — Added overflow badge merging strategy documentation
 - 2025-10-01 — Added view window filtering design rationale
 - 2026-07-04 — Card heights now derived from the typography contract in `src/layout/cardMetrics.ts` (full 132px, compact 90px, title-only 32px; guarded by `cardMetrics.test.ts`); date is top-aligned directly under description (bottom spacer removed); §1.1–1.3 and §2.3 updated accordingly
+- 2026-07-05 — §1.1 updated for **C3 quantized per-instance heights**: cards size to measured content (≤ the worst-case fixed height) via `textMeasure.ts` + `cardMetrics.quantizedCardHeight`; renderer sets per-card clamp == box; packing is pixel/height-based with re-pack-to-fill. Internal dead space cut to the padding+border floor (~0.15–0.18 gap ratio).
 - 2026-07-05 — §2.1/§2.2 rewritten for **B2 budget-driven packing**: `DegradationEngine.packHalfColumn` fills each half-column's cell budget (`layoutBudget.getHalfColumnBudget`) via visibility-first + earliest-richest upgrade rounds, replacing fixed event-count thresholds and hard-coded mixed recipes. Soft caps full≤2/compact≤4; title-only uncapped. Per-side independent packing.

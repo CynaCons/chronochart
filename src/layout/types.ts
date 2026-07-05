@@ -55,6 +55,8 @@ export interface PositionedCard {
   cardType: CardType;
   clusterId: string;
   overflowCount?: number; // Number of overflow events (for "+N more" display)
+  titleLines?: number;    // Quantized (C3): predicted title lines; drives per-card clamp + height
+  descLines?: number;     // Quantized (C3): predicted description lines
 }
 
 export interface LayoutConfig {

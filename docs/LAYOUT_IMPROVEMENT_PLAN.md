@@ -268,7 +268,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 
 ---
 
-#### C3 — Quantized per-instance card heights (Option C, user-selected) 🔄 IN PROGRESS
+#### C3 — Quantized per-instance card heights (Option C, user-selected) ✅ DONE
 **Priority:** P2 (user-elevated) · **Depends on:** C1 (decision), B2 · **Failure mode:** F9-residual
 
 **Decision (2026-07-05):** user chose **Option C** (full per-instance quantization) with **re-pack to fill** — cards size to their real content AND freed space is used to enrich/add cards.
@@ -281,11 +281,15 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 **Safety invariant:** a card's box height and its clamp are always set from the SAME predicted line counts, so text truncates (ellipsis) rather than overflowing — under-prediction costs a little content, never a clip. T104 (clipping + gap ratio) and test 71 (overlaps) guard every slice.
 
 **Acceptance criteria.**
-- [ ] T104 gap ratio drops below the 0.18 target on ≥90% of full/compact cards (the C1 goal); zero clipping/overflow.
-- [ ] Test 71 still shows 0 overlaps / uniform gaps; suites 36/48/67/70 pass with justified expectation updates.
-- [ ] All §2 gates pass; SDS §1.1/§2 updated (heights are now per-instance).
+- [x] T104 gap ratio dropped to the structural floor: **full 0.263–0.390 → 0.154, compact 0.337 → 0.182** (padding+border only); zero clipping (T104.2/.4/.9 pass).
+- [x] Test 71 still 0 overlaps / uniform 12px gaps; suites 36/48/67/70 pass (70: 0 overlaps/violations across 15 zoom levels). Distribution richer (full 5→6, compact 5→7 on french-revolution — re-pack-to-fill enriches columns).
+- [x] All §2 gates pass; SDS §1.1 updated (heights per-instance).
 
-**Completion log:** Slice 1 done 2026-07-05 — `textMeasure.ts` + `cardMetrics` quantized helpers, 9 unit tests. Slices 2–3 pending.
+**Completion log:** 2026-07-05 (coordinator). **All 3 slices landed.**
+- Slice 1: `textMeasure.ts` (deterministic greedy word-wrap; canvas when available, char-estimate fallback) + `cardMetrics.contentLinesFor`/`heightForLines`/`quantizedCardHeight` (per-instance height ≤ worst-case fixed height). 9 unit tests.
+- Slice 2: `packHalfColumn(events, side)` reworked from cell-based to **pixel/height-based** — fills the pixel budget with real per-event tier heights; because a sparse full ≈ compact in height, upgrades are cheap and more cards enrich (re-pack-to-fill). `buildCards` sets per-instance `height` + `titleLines`/`descLines`. `DegradationEngine.test.ts` matrix rewritten to height-based invariants (57 tests).
+- Slice 3: `DeterministicLayoutComponent` sets `-webkit-line-clamp` + `max-height` per card from its line counts, so **box == clamp** → text truncates (ellipsis) rather than overflowing the shrunk box. T104.3 clamp validation rewritten to range-based; T104.11 regression guard tightened 0.40 → 0.25 to lock the gain.
+- **Safety held:** zero clipping anywhere, verified by T104 bounds + 15-zoom-level suite 70.
 
 ---
 
@@ -304,7 +308,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 | 2026-07-04 | B3.3 | Rewriting CC-REQ-CLUSTER-COORD-001 changes a stated requirement — needs user sign-off when B3 lands. | **Resolved 2026-07-05**: user approved. CC-REQ-CLUSTER-COORD-001 + CC-REQ-MIXED-TYPES-001 rewritten to independent per-side packing. |
 | 2026-07-04 | A1 | After removing `getViewportSpecificConfig`, its helper `getViewportCategory` + `VIEWPORT_BREAKPOINTS` + `updateLayoutConfigForViewport` now have ZERO live consumers but were out of A1's named removal scope. Kept (still exported from `src/layout/index.ts`) to honor minimal-diff. Remove in a follow-up? | Open |
 | 2026-07-05 | B1 | Minor residual: `config.ts` `HEADER_SAFE_ZONE = 100` is still a local literal (source of `timelineY`), duplicating `layoutBudget.MINIMAP_SAFE_ZONE`. Left as-is (minimal diff); the `computeTimelineY === createLayoutConfig.timelineY` unit test guards them against drift. Fold `config.ts` onto the constant in a later cleanup? | Open |
-| 2026-07-05 | C1 | **Fill-efficiency decision — needs your call.** Measured across 3 timelines: full 26–39% / compact 34% internal dead space, 0% under the 15% target, 100% of cards use 1-line titles (2-line budget wasted universally). Options + recommendation (Option B: re-derive heights for a 1-line title) in `docs/analysis/quantized-heights-decision.md`. **Which option — A/B/C/D?** | Open (analysis done) |
+| 2026-07-05 | C1 | Fill-efficiency decision. Measured full 26–39% / compact 34% dead space, 0% under target. | **Resolved 2026-07-05**: user chose **Option C** (full per-instance quantization) + re-pack-to-fill. Implemented as C3 — gap now full 0.154 / compact 0.182 (structural floor). |
 | 2026-07-04 | A5.1 | **Internal fill efficiency finding.** Full/compact cards carry ~26–35px uniform dead space (gap ratio full 0.263, compact 0.337) on french-revolution, driven by 1-line titles occupying a 2-line title budget. `<0.18` "efficient fill" is unreachable with fixed heights + short content. This is the core signal for **C1** (quantized per-instance heights vs. accept residual). T104.11 downgraded from `<0.18`-enforcing to telemetry + `<0.40` regression guard. **User decision needed (with C1): pursue quantized heights, or accept the slack as the cost of visual-coherence fixed sizes?** | Open |
 
 ## 6. Change history
@@ -313,6 +317,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 |------|--------|
 | 2026-07-04 | Plan created from Phase 1 findings (coordinator analysis of cardMetrics work, dead-code audit, test-suite review). |
 | 2026-07-05 | B1 ✅: `layoutBudget.ts` unifies the vertical-budget math (was 3 disagreeing copies). No-behavior-change refactor — degradation value identical, CapacityModel +2px (no boundary crossed), per-side asymmetry now explicit. Foundation for B2/B3/B4. |
+| 2026-07-05 | C3 ✅: quantized per-instance card heights (Option C) — cards size to measured content; gap ratio full 0.263–0.390 → 0.154, compact 0.337 → 0.182 (structural floor). Height-based packing + re-pack-to-fill (richer columns), per-card render clamps (box==clamp → no clipping). Verified across 15 zoom levels. |
 | 2026-07-05 | C1 ✅ (analysis): measured 26–39% internal dead space across 3 timelines (0% under 15% target; 100% 1-line titles). `docs/analysis/quantized-heights-decision.md` recommends Option B (re-derive for 1-line title). Decision pending user. |
 | 2026-07-05 | B4 ✅: positioning robustness — clamp/recompaction already correct (structurally prevented by B1/B2); added guard test `71-positioning-robustness` proving 0 overlaps, 0 minimap intrusions, uniform 12px gaps at 1280×720. No code change needed. |
 | 2026-07-05 | B3 ✅: above/below independence formalized — removed dead `recommendedCardType`/`determineUniformCardType`; user-approved rewrite of CC-REQ-CLUSTER-COORD-001 + CC-REQ-MIXED-TYPES-001 to independent per-side packing (resolves contradiction with CC-REQ-CAPACITY-INDEPENDENT-001). |

@@ -175,26 +175,30 @@ async function validateLineClamp(page: any) {
         (!titleEl || titleMaxH !== 'none') &&
         (!descEl || descMaxH !== 'none');
 
-      // Expected values based on DeterministicLayoutComponent card content
-      const expected = {
-        'full': { title: '2', desc: '3' },
-        'compact': { title: '2', desc: '1' },
-        'title-only': { title: '1', desc: 'none' }
+      // C3: clamps are now per-card (set to each card's measured line count),
+      // not fixed per type. Validate the clamp stays within the tier's allowed
+      // range (>=1, <= the type's max) rather than equalling a fixed value.
+      const maxLines = {
+        'full': { title: 2, desc: 3 },
+        'compact': { title: 2, desc: 1 },
+        'title-only': { title: 1, desc: 0 }
       };
+      const max = maxLines[cardType as keyof typeof maxLines] || maxLines['full'];
 
-      const exp = expected[cardType as keyof typeof expected] || expected['full'];
+      const titleN = Number(titleClamp);
+      const descN = Number(descClamp);
+      const titleInRange = Number.isFinite(titleN) && titleN >= 1 && titleN <= max.title;
+      const descInRange =
+        !descEl ? true : Number.isFinite(descN) && descN >= 1 && descN <= max.desc;
 
       return {
         cardType,
         titleClamp,
         descClamp,
-        expectedTitle: exp.title,
-        expectedDesc: exp.desc,
+        expectedTitle: `1..${max.title}`,
+        expectedDesc: max.desc === 0 ? 'none' : `1..${max.desc}`,
         hasClampMaxHeight,
-        isValid:
-          hasClampMaxHeight &&
-          titleClamp === exp.title &&
-          (descClamp === exp.desc || (!descEl && exp.desc === 'none'))
+        isValid: hasClampMaxHeight && titleInRange && descInRange
       };
     });
   });
@@ -866,23 +870,20 @@ ${report.overflowIssues.total > 0 ? '- Fix overflow issues in affected card type
 
     console.log('\n📐 === T104.11: INTERNAL FILL EFFICIENCY ===\n');
 
-    // Telemetry + regression guard for F9 residual (internal dead space).
+    // Internal dead-space (F9 residual) telemetry + regression guard.
     //
     // For every visible full/compact card that HAS a description, measure the
-    // dead space below the last content block (the date). Phase 1 derived card
-    // heights from the typography contract for the WORST case (2-line title +
-    // full description); cards whose title/description are shorter leave the
-    // reserved space empty (top-aligned stack pools slack at the bottom).
+    // dead space below the last content block (the date).
     //
-    // The <0.18 "efficient fill" target is NOT achievable with fixed heights
-    // when content is short (measured 2026-07-04: full≈0.263, compact≈0.337 on
-    // french-revolution, dominated by 1-line titles in a 2-line title budget).
-    // Reaching <0.18 requires quantized per-instance heights — owned by plan
-    // item C1 (docs/LAYOUT_IMPROVEMENT_PLAN.md) / B2. This test therefore LOGS
-    // the distribution (the telemetry C1 consumes) and enforces only a loose
-    // regression guard so the gate stays green until C1 lands. See §5 finding.
-    const REGRESSION_MAX = 0.40; // catastrophic-emptiness guard; baseline worst ≈0.337
-    const FILL_TARGET = 0.18;    // C1/B2 goal, reported not enforced here
+    // C3 quantized per-instance heights (2026-07-05) size each card to its
+    // measured content, cutting the gap from the pre-C3 baseline (full≈0.263–
+    // 0.390, compact≈0.337) down to the structural floor of padding+border
+    // (measured full≈0.154, compact≈0.182). The remaining gap is unavoidable
+    // (bottom padding + border) without a content-box change. The guard is now
+    // tight to lock in the gain and catch any regression back toward fixed
+    // heights; the FILL_TARGET is reported for reference.
+    const REGRESSION_MAX = 0.25; // structural floor is ~0.18–0.20 on the smallest cards
+    const FILL_TARGET = 0.18;    // C1 goal — met for full, ~floor for compact
     const gapData = await page.locator('[data-testid="event-card"]').evaluateAll((cards: HTMLElement[]) => {
       const rows: any[] = [];
       cards.forEach(card => {

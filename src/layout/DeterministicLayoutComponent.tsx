@@ -6,6 +6,16 @@ import type { LayoutConfig, PositionedCard, Anchor, EventCluster } from './types
 
 // Telemetry types now defined in vite-env.d.ts Window interface
 import { CARD_FOOTPRINTS, LAYOUT_CONSTANTS } from './CapacityModel';
+import { TITLE_LINE_HEIGHT, DESC_LINE_HEIGHT } from './cardMetrics';
+
+// C3: per-card clamp override — sets -webkit-line-clamp + max-height to the
+// measured line counts so the clamp matches the (quantized) box height and text
+// truncates with an ellipsis instead of overflowing. Falls back to the CSS
+// class default when line counts are absent (non-quantized cards).
+function clampStyle(lines: number | undefined, lineHeightPx: number): CSSProperties {
+  if (lines === undefined) return {};
+  return { WebkitLineClamp: lines, maxHeight: `${(lines * lineHeightPx).toFixed(2)}px` };
+}
 import { createLayoutConfig } from './config';
 import { DeterministicLayoutV5, type DispatchMetrics } from './LayoutEngine';
 import { useAxisTicks, type Tick } from '../timeline/hooks/useAxisTicks';
@@ -1127,10 +1137,10 @@ export const DeterministicLayoutComponent = memo(function DeterministicLayoutCom
 
         const content =
           card.cardType === 'compact'
-            ? <CompactCardContent event={card.event} />
+            ? <CompactCardContent event={card.event} titleLines={card.titleLines} descLines={card.descLines} />
             : card.cardType === 'title-only'
             ? <TitleOnlyCardContent event={card.event} />
-            : <FullCardContent event={card.event} />;
+            : <FullCardContent event={card.event} titleLines={card.titleLines} descLines={card.descLines} />;
 
         return (
           <div
@@ -1227,23 +1237,25 @@ function SourceIndicator({ sources }: { sources?: string[] }) {
 }
 
 // P1-3: Memoized card content components to prevent unnecessary re-renders
-const FullCardContent = memo(function FullCardContent({ event }: { event: Event }) {
+const FullCardContent = memo(function FullCardContent(
+  { event, titleLines, descLines }: { event: Event; titleLines?: number; descLines?: number }
+) {
   return (
     <div className="card-body h-full flex flex-col overflow-hidden">
       <div className="flex items-start gap-1 flex-shrink-0">
         <h3
           className="card-title card-clamp-title-2 flex-1 min-w-0"
-          style={{ color: 'var(--color-text-primary)' }}
+          style={{ color: 'var(--color-text-primary)', ...clampStyle(titleLines, TITLE_LINE_HEIGHT) }}
           title={event.title}
         >
           {event.title}
         </h3>
         <SourceIndicator sources={event.sources} />
       </div>
-      {event.description ? (
+      {event.description && (descLines ?? 1) > 0 ? (
         <p
           className="card-description card-clamp-desc-3 flex-shrink-0 mt-0.5"
-          style={{ color: 'var(--color-text-secondary)' }}
+          style={{ color: 'var(--color-text-secondary)', ...clampStyle(descLines, DESC_LINE_HEIGHT) }}
           title={event.description}
         >
           {event.description}
@@ -1256,23 +1268,25 @@ const FullCardContent = memo(function FullCardContent({ event }: { event: Event 
   );
 });
 
-const CompactCardContent = memo(function CompactCardContent({ event }: { event: Event }) {
+const CompactCardContent = memo(function CompactCardContent(
+  { event, titleLines, descLines }: { event: Event; titleLines?: number; descLines?: number }
+) {
   return (
     <div className="card-body h-full flex flex-col overflow-hidden">
       <div className="flex items-start gap-1 flex-shrink-0">
         <h3
           className="card-title card-clamp-title-2 flex-1 min-w-0"
-          style={{ color: 'var(--color-text-primary)' }}
+          style={{ color: 'var(--color-text-primary)', ...clampStyle(titleLines, TITLE_LINE_HEIGHT) }}
           title={event.title}
         >
           {event.title}
         </h3>
         <SourceIndicator sources={event.sources} />
       </div>
-      {event.description ? (
+      {event.description && (descLines ?? 1) > 0 ? (
         <p
           className="card-description card-clamp-desc-1 flex-shrink-0 mt-0.5"
-          style={{ color: 'var(--color-text-secondary)' }}
+          style={{ color: 'var(--color-text-secondary)', ...clampStyle(descLines, DESC_LINE_HEIGHT) }}
           title={event.description}
         >
           {event.description}

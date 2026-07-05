@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { DegradationEngine } from './DegradationEngine';
-import { createLayoutConfig, CARD_HEIGHT_CELLS } from '../config';
+import { createLayoutConfig } from '../config';
+import { quantizedCardHeight, CARD_SPACING } from '../cardMetrics';
 import type { ColumnGroup } from '../LayoutEngine';
 import type { CardType } from '../types';
 import type { Event } from '../../types';
@@ -16,17 +17,32 @@ function makeEvent(id: string, date = '2020-01-01'): Event {
 }
 
 /**
- * Build an engine whose ABOVE half-column budget is exactly K cells.
- * getHalfColumnBudget(above).cells = floor((timelineY − 136) / 44), so setting
- * timelineY = 136 + 44K + 10 lands squarely on K.
+ * Build an engine whose ABOVE half-column budget is exactly `px` pixels.
+ * getHalfColumnBudget(above).pixels = timelineY − 148, so timelineY = px + 148.
+ * (C3 packing is pixel/height-based, not cell-based.)
  */
-function engineForK(K: number): DegradationEngine {
+function engineForPixels(px: number): DegradationEngine {
   const config = createLayoutConfig(1440, 900);
-  config.timelineY = 136 + 44 * K + 10;
+  config.timelineY = px + 148;
   return new DegradationEngine(config);
 }
 
 const RICHNESS: Record<CardType, number> = { full: 3, compact: 2, 'title-only': 1 };
+
+// Measured heights of the uniform test event at each tier (short title + short
+// description → 1-line title, 1-line description). Used to assert the packed
+// stack fits its pixel budget.
+const SAMPLE = makeEvent('e0');
+const H: Record<CardType, number> = {
+  'title-only': quantizedCardHeight(SAMPLE.title, SAMPLE.description, 'title-only'),
+  compact: quantizedCardHeight(SAMPLE.title, SAMPLE.description, 'compact'),
+  full: quantizedCardHeight(SAMPLE.title, SAMPLE.description, 'full'),
+};
+const stackHeight = (types: CardType[]) =>
+  types.reduce((sum, t, i) => sum + H[t] + (i > 0 ? CARD_SPACING : 0), 0);
+/** How many title-only cards (the shortest) fit in a pixel budget. */
+const maxTitleOnly = (px: number) =>
+  Math.max(1, Math.floor((px + CARD_SPACING) / (H['title-only'] + CARD_SPACING)));
 
 function packedTypes(engine: DegradationEngine, n: number): CardType[] {
   const events = Array.from({ length: n }, (_, i) => makeEvent(`e${i}`));
@@ -117,24 +133,22 @@ describe('DegradationEngine', () => {
   });
 });
 
-describe('DegradationEngine — B2 budget-driven packing', () => {
-  const Ks = [4, 8, 12, 16];
+describe('DegradationEngine — C3 height-based packing', () => {
+  const pxBudgets = [150, 300, 500, 800];
   const Ns = Array.from({ length: 12 }, (_, i) => i + 1); // 1..12
 
-  describe.each(Ks)('budget K=%i cells', (K) => {
+  describe.each(pxBudgets)('budget %ipx', (px) => {
     it.each(Ns)('N=%i respects budget, visibility, staircase and caps', (N) => {
-      const engine = engineForK(K);
-      const types = packedTypes(engine, N);
+      const types = packedTypes(engineForPixels(px), N);
 
-      const usedCells = types.reduce((s, t) => s + CARD_HEIGHT_CELLS[t], 0);
       const fullCount = types.filter(t => t === 'full').length;
       const compactCount = types.filter(t => t === 'compact').length;
 
-      // (a) never exceeds the cell budget
-      expect(usedCells).toBeLessThanOrEqual(K);
-      // (b) visible count is maximized (everyone starts title-only, cost 1)
-      expect(types.length).toBe(Math.min(N, K));
-      // (c) tiers are non-increasing in chronological order (earliest = richest)
+      // (a) the packed stack never exceeds the pixel budget
+      expect(stackHeight(types)).toBeLessThanOrEqual(px);
+      // (b) visible count is maximized (everyone starts title-only, the shortest)
+      expect(types.length).toBe(Math.min(N, maxTitleOnly(px)));
+      // (c) tiers non-increasing chronologically (earliest = richest)
       for (let i = 1; i < types.length; i++) {
         expect(RICHNESS[types[i]]).toBeLessThanOrEqual(RICHNESS[types[i - 1]]);
       }
@@ -144,42 +158,44 @@ describe('DegradationEngine — B2 budget-driven packing', () => {
     });
   });
 
-  it('N=2, K=8 → uniform full (richest tier both cards can share)', () => {
-    expect(packedTypes(engineForK(8), 2)).toEqual(['full', 'full']);
-  });
-
-  it('N=3, K=9 → uniform compact (full would exceed the full cap of 2)', () => {
-    expect(packedTypes(engineForK(9), 3)).toEqual(['compact', 'compact', 'compact']);
-  });
-
   it('N=1 → a single event is a full card whenever it fits', () => {
-    expect(packedTypes(engineForK(4), 1)).toEqual(['full']);
-    expect(packedTypes(engineForK(16), 1)).toEqual(['full']);
+    expect(packedTypes(engineForPixels(300), 1)).toEqual(['full']);
+    expect(packedTypes(engineForPixels(800), 1)).toEqual(['full']);
   });
 
-  it('dense cluster (N ≥ K) maximizes visibility with all title-only, overflowing the rest', () => {
-    // K=16, N=20: the budget is fully spent showing 16 events; none can be
-    // upgraded (visibility wins over richness), and 4 events overflow.
-    const engine = engineForK(16);
+  it('sparse events upgrade to full readily, capped at 2 full', () => {
+    // With quantized heights a sparse full ≈ compact in height, so upgrades are
+    // cheap: earliest events reach full up to the cap, the rest compact.
+    const types = packedTypes(engineForPixels(500), 3);
+    expect(types.filter(t => t === 'full').length).toBe(2);
+    expect(types[2]).toBe('compact');
+  });
+
+  it('dense cluster (budget-full) maximizes visibility with all title-only, overflowing the rest', () => {
+    // 150px fits 3 title-only (44px cells) with no room to upgrade.
+    const engine = engineForPixels(150);
     const events = Array.from({ length: 20 }, (_, i) => makeEvent(`e${i}`));
     const group = makeGroup('above-dense', 'above', events);
     const [packed] = engine.applyDegradationAndPromotion([group]);
     const types = packed.cards.map(c => c.cardType);
 
-    expect(types.length).toBe(16); // min(N, K)
-    expect(packed.overflowEvents?.length ?? 0).toBe(4); // remainder overflows
-    expect(types.every(t => t === 'title-only')).toBe(true); // no budget left to upgrade
+    expect(types.length).toBe(maxTitleOnly(150));
+    expect(packed.overflowEvents?.length ?? 0).toBe(20 - types.length);
+    expect(types.every(t => t === 'title-only')).toBe(true);
   });
 
-  it('slack (N < K) spends leftover budget on a full→title staircase', () => {
-    // K=16, N=6: 6 title-only (6 cells) leaves 10 cells; earliest cards upgrade
-    // to the caps → [full, full, compact, compact, title, title] = 16 cells.
-    const types = packedTypes(engineForK(16), 6);
-    expect(types).toEqual(['full', 'full', 'compact', 'compact', 'title-only', 'title-only']);
+  it('slack spends leftover budget on a full→compact→title staircase', () => {
+    const types = packedTypes(engineForPixels(500), 6);
+    // Non-increasing, budget-respecting, with a rich head and title-only tail.
+    expect(types[0]).toBe('full');
+    expect(types[types.length - 1]).toBe('title-only');
+    expect(types.filter(t => t === 'full').length).toBeLessThanOrEqual(2);
+    expect(types.filter(t => t === 'compact').length).toBeLessThanOrEqual(4);
+    expect(stackHeight(types)).toBeLessThanOrEqual(500);
   });
 
   it('is deterministic — identical inputs yield identical packing', () => {
-    expect(packedTypes(engineForK(12), 7)).toEqual(packedTypes(engineForK(12), 7));
+    expect(packedTypes(engineForPixels(500), 7)).toEqual(packedTypes(engineForPixels(500), 7));
   });
 
   it('B3: a sparse below is not degraded by a crowded above (independent per-side)', () => {
