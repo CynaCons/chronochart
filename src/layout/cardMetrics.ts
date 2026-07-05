@@ -27,6 +27,7 @@
  */
 
 import type { CardType } from './types';
+import { measureLineCount, CARD_FONT_FAMILY, type FontSpec } from './textMeasure';
 
 /** Line height of `.card-title` (0.875rem * 1.25), in px. */
 export const TITLE_LINE_HEIGHT = 17.5;
@@ -125,4 +126,81 @@ export function deriveCardHeight(type: CardType): number {
   const padding = CARD_PADDING[type] * 2;
   const border = BORDER_WIDTH * 2;
   return Math.ceil(contentHeight + padding + border);
+}
+
+// ---------------------------------------------------------------------------
+// Quantized (per-instance) heights — C1 Option C.
+//
+// Instead of every card of a type using CARD_HEIGHTS[type] (sized for the worst
+// case), each card is measured and sized to its ACTUAL content lines, which
+// eliminates the internal dead space documented in
+// docs/analysis/quantized-heights-decision.md. The rendered card's clamp is set
+// to the same line counts, so text can never overflow the shrunk box.
+// ---------------------------------------------------------------------------
+
+/** Card width in px (matches DEFAULT_CARD_CONFIGS width in config.ts). */
+export const CARD_WIDTH = 260;
+
+/** Font used to measure titles (matches `.card-title`: 0.875rem, weight 600). */
+export const TITLE_FONT: FontSpec = { size: 14, weight: 600, family: CARD_FONT_FAMILY };
+/** Font used to measure descriptions (matches `.card-description`: 0.75rem, weight 400). */
+export const DESC_FONT: FontSpec = { size: 12, weight: 400, family: CARD_FONT_FAMILY };
+
+/** Usable text width inside a card of the given type (px). */
+export function contentWidthFor(type: CardType): number {
+  return CARD_WIDTH - 2 * CARD_PADDING[type] - 2 * BORDER_WIDTH;
+}
+
+export interface ContentLines {
+  titleLines: number;
+  descLines: number;
+}
+
+/**
+ * Predicted rendered line counts for an event at a card type, each clamped to
+ * that type's `-webkit-line-clamp` limit. `descLines` is 0 for title-only cards
+ * and for events with no description.
+ */
+export function contentLinesFor(
+  title: string,
+  description: string | undefined,
+  type: CardType
+): ContentLines {
+  const clamp = LINE_CLAMPS[type];
+  const width = contentWidthFor(type);
+  const titleLines = Math.min(clamp.title, Math.max(1, measureLineCount(title ?? '', width, TITLE_FONT)));
+  const descLines =
+    clamp.desc === 0 ? 0 : Math.min(clamp.desc, measureLineCount(description ?? '', width, DESC_FONT));
+  return { titleLines, descLines };
+}
+
+/** Small safety margin (px) against sub-pixel rounding, as with CARD_HEIGHTS. */
+const QUANTIZED_MARGIN = 2;
+
+/**
+ * Height (px) for a card of `type` rendering exactly `titleLines`/`descLines`.
+ * Never exceeds CARD_HEIGHTS[type] (the worst case) and never clips (the render
+ * clamp is set to the same line counts). title-only stays at its fixed height.
+ */
+export function heightForLines(type: CardType, titleLines: number, descLines: number): number {
+  if (type === 'title-only') return CARD_HEIGHTS['title-only'];
+
+  const content =
+    titleLines * TITLE_LINE_HEIGHT +
+    (descLines > 0 ? BLOCK_GAP + descLines * DESC_LINE_HEIGHT : 0) +
+    BLOCK_GAP +
+    DATE_LINE_HEIGHT;
+
+  const height = Math.ceil(content + 2 * CARD_PADDING[type] + 2 * BORDER_WIDTH) + QUANTIZED_MARGIN;
+  return Math.min(height, CARD_HEIGHTS[type]);
+}
+
+/** Convenience: measured, content-fitted height for an event at a card type. */
+export function quantizedCardHeight(
+  title: string,
+  description: string | undefined,
+  type: CardType
+): number {
+  const { titleLines, descLines } = contentLinesFor(title, description, type);
+  return heightForLines(type, titleLines, descLines);
 }

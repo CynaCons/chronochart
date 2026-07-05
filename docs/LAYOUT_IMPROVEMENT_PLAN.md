@@ -268,6 +268,27 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 
 ---
 
+#### C3 — Quantized per-instance card heights (Option C, user-selected) 🔄 IN PROGRESS
+**Priority:** P2 (user-elevated) · **Depends on:** C1 (decision), B2 · **Failure mode:** F9-residual
+
+**Decision (2026-07-05):** user chose **Option C** (full per-instance quantization) with **re-pack to fill** — cards size to their real content AND freed space is used to enrich/add cards.
+
+**Approach — verifiable slices:**
+1. ✅ **Measurement + height derivation** (`textMeasure.ts`, `cardMetrics.quantized*`): deterministic line-count (canvas when available, char-estimate fallback) → per-instance height ≤ the worst-case fixed height. Unit-tested (`quantizedHeight.test.ts`). No behavior change yet.
+2. ⬜ **Height-based packing + re-pack**: `packHalfColumn(events, side)` fills the pixel budget with real per-event tier heights (visibility-first, then earliest-first upgrades using measured deltas), so cheaper (shorter) cards let more events upgrade. `buildCards` sets `card.height` + `titleLines`/`descLines` per instance. Rework the B2 cell-based matrix tests to height-based.
+3. ⬜ **Per-card render clamps**: `DeterministicLayoutComponent` sets `-webkit-line-clamp` + `max-height` from each card's line counts (box == clamp → never clips).
+
+**Safety invariant:** a card's box height and its clamp are always set from the SAME predicted line counts, so text truncates (ellipsis) rather than overflowing — under-prediction costs a little content, never a clip. T104 (clipping + gap ratio) and test 71 (overlaps) guard every slice.
+
+**Acceptance criteria.**
+- [ ] T104 gap ratio drops below the 0.18 target on ≥90% of full/compact cards (the C1 goal); zero clipping/overflow.
+- [ ] Test 71 still shows 0 overlaps / uniform gaps; suites 36/48/67/70 pass with justified expectation updates.
+- [ ] All §2 gates pass; SDS §1.1/§2 updated (heights are now per-instance).
+
+**Completion log:** Slice 1 done 2026-07-05 — `textMeasure.ts` + `cardMetrics` quantized helpers, 9 unit tests. Slices 2–3 pending.
+
+---
+
 ## 4. Definition of done (whole plan)
 
 - All P1 and P2 items ✅ (P3 may be ⛔/deferred with reasons).
