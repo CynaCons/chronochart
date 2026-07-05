@@ -63,50 +63,44 @@ This creates an intuitive visual signal: larger, more prominent cards = more spa
 
 ## 2. Degradation Algorithm Design
 
-### 2.1 Event Count Thresholds
+### 2.1 Budget-Driven Packing (B2, 2026-07-05)
 
-The degradation system uses fixed event count thresholds per half-column:
+Degradation is a function of each half-column's actual **cell budget**, not fixed
+event-count recipes. The budget comes from the single source of truth
+`getHalfColumnBudget(config, side)` (`layoutBudget.ts`), which returns the number
+of 44px cells (`K`) that physically fit on that side. Card costs in cells:
+`full = 4`, `compact = 3`, `title-only = 1` (`CARD_HEIGHT_CELLS`).
 
-```typescript
-// From DegradationEngine.ts - determineCardType()
-
-if (eventCount <= 2) {
-  return 'full';      // Low density: 1-2 events
-} else if (eventCount <= 4) {
-  return 'compact';   // Medium density: 3-4 events
-} else {
-  return 'title-only'; // High density: 5+ events
-}
-```
-
-**Rationale:**
-- **2 events**: Matches full card slot capacity (2 slots per half-column)
-- **4 events**: Matches compact card slot capacity (4 slots per half-column)
-- **5+ events**: Requires title-only cards (8 slots per half-column)
-
-### 2.2 Degradation Decision Tree
+`DegradationEngine.packHalfColumn(N, side)` returns one card type per visible
+event, in chronological order:
 
 ```
-Event Count → Card Type Selection
-│
-├─ eventCount ≤ 2
-│  └─ Use FULL cards
-│     - 2 slots per half-column
-│     - Full description visible
-│     - Optimal readability
-│
-├─ eventCount = 3-4
-│  └─ Use COMPACT cards
-│     - 4 slots per half-column
-│     - Partial description (1 line)
-│     - Good readability, higher density
-│
-└─ eventCount ≥ 5
-   └─ Use TITLE-ONLY cards
-      - 8 slots per half-column
-      - No description shown
-      - Maximum density, scan-optimized
+1. Visibility first: visible = min(N, K); every visible event starts title-only.
+   (Showing the most events wins before any budget is spent on richer cards.)
+   If N > K, the extra events overflow (the "+N" badge).
+2. Two upgrade rounds spend the leftover budget from the earliest event forward:
+   round A raises a prefix of cards title-only -> compact,
+   round B raises a prefix compact -> full.
+   Each round stops when its density cap or the remaining budget is reached.
 ```
+
+**Result — a non-increasing "staircase":** the earliest events get the richest
+cards (e.g. `[full, full, compact, compact, title-only, title-only]`), and
+uniform tiers emerge naturally when the whole stack can reach one tier (e.g.
+`N=2, K=8 → [full, full]`; `N=3, K=9 → [compact, compact, compact]`).
+
+**Density caps (soft ceilings, `DENSITY_CAPS`):** `full ≤ 2`, `compact ≤ 4` per
+half-column — readability/density preferences, not physical limits. Title-only
+has **no fixed cap** (the budget is its only limit; the legacy value of 8 was
+removed so tall viewports show more events).
+
+**Above/below independence:** each half-column packs against its own per-side
+budget, so a crowded `above` no longer degrades a sparse `below`.
+
+> Superseded: the pre-B2 design used fixed event-count thresholds
+> (`≤2 → full`, `3–4 → compact`, `5+ → title-only`) and hard-coded mixed
+> recipes. These wasted budget on large viewports (uniform title-only) and
+> overflowed small ones. Retained here only as change history.
 
 ### 2.3 Space Reclamation Calculations
 
@@ -1101,3 +1095,4 @@ applyDegradationAndPromotion(groups: ColumnGroup[]): ColumnGroup[] {
 - 2025-10-01 — Added overflow badge merging strategy documentation
 - 2025-10-01 — Added view window filtering design rationale
 - 2026-07-04 — Card heights now derived from the typography contract in `src/layout/cardMetrics.ts` (full 132px, compact 90px, title-only 32px; guarded by `cardMetrics.test.ts`); date is top-aligned directly under description (bottom spacer removed); §1.1–1.3 and §2.3 updated accordingly
+- 2026-07-05 — §2.1/§2.2 rewritten for **B2 budget-driven packing**: `DegradationEngine.packHalfColumn` fills each half-column's cell budget (`layoutBudget.getHalfColumnBudget`) via visibility-first + earliest-richest upgrade rounds, replacing fixed event-count thresholds and hard-coded mixed recipes. Soft caps full≤2/compact≤4; title-only uncapped. Per-side independent packing.

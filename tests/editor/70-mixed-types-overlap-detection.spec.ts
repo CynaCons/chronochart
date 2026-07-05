@@ -109,106 +109,37 @@ test.describe('Mixed Card Types Overlap Detection', () => {
      * - Full or compact with overflow (should degrade to title-only)
      * - Title-only mixed directly with full (should use compact as bridge)
      */
+    // B2 budget-driven packing (2026-07-05) replaced the old count-recipes with
+    // a per-half-column staircase that fills each side's own cell budget. The
+    // contract is now expressed as invariants rather than exact per-count
+    // patterns, and half-columns degrade INDEPENDENTLY — a rich `above` may sit
+    // in the same cluster as an overflowing `below` (hence hasOverflow, which is
+    // cluster-level, does not constrain a half-column's tiers):
+    //   - richness is non-increasing chronologically (earliest event = richest)
+    //   - soft density caps: full <= 2, compact <= 4 per half-column
+    const RICHNESS: Record<string, number> = { full: 3, compact: 2, 'title-only': 1 };
     const validateDegradationRules = (
       cardTypes: string[],
-      hasOverflow: boolean
+      _hasOverflow: boolean
     ): string[] => {
       const violations: string[] = [];
-      const cardCount = cardTypes.length;
-
-      // Count each card type
+      const pattern = cardTypes.join(',');
       const fullCount = cardTypes.filter(t => t === 'full').length;
       const compactCount = cardTypes.filter(t => t === 'compact').length;
-      const titleOnlyCount = cardTypes.filter(t => t === 'title-only').length;
 
-      // Rule 1: If overflow exists, cards must be title-only
-      if (hasOverflow) {
-        if (fullCount > 0 || compactCount > 0) {
+      // Rule 1: non-increasing tier richness (the B2 staircase invariant).
+      for (let i = 1; i < cardTypes.length; i++) {
+        if (RICHNESS[cardTypes[i]] > RICHNESS[cardTypes[i - 1]]) {
           violations.push(
-            `OVERFLOW with non-degraded cards: ${fullCount} full, ${compactCount} compact ` +
-            `(should all be title-only when overflow exists)`
+            `Non-monotonic tiers: [${pattern}] (earlier events must be at least as rich)`
           );
-        }
-        // IMPORTANT: If overflow exists and all cards are title-only, this is VALID
-        // regardless of count. Cluster coordination may force title-only on a half-column
-        // with few events if the paired half-column has overflow.
-        if (titleOnlyCount === cardCount) {
-          return violations; // Valid pattern - all title-only due to cluster coordination
+          break;
         }
       }
 
-      // Rule 2: Validate card type patterns based on count
-      const pattern = cardTypes.join(',');
-
-      if (cardCount === 1) {
-        // Only 1 full card is valid
-        if (cardTypes[0] !== 'full') {
-          violations.push(
-            `Invalid single card: type=${cardTypes[0]} (single card must be 'full')`
-          );
-        }
-      } else if (cardCount === 2) {
-        // Must be 2 full cards (uniform)
-        if (fullCount !== 2) {
-          violations.push(
-            `Invalid 2-card pattern: [${pattern}] (2 cards must be 2 full, not ${fullCount} full + ${compactCount} compact)`
-          );
-        }
-      } else if (cardCount === 3) {
-        // Must be 1 full + 2 compact (mixed)
-        if (!(fullCount === 1 && compactCount === 2)) {
-          violations.push(
-            `Invalid 3-card pattern: [${pattern}] (3 cards must be 1 full + 2 compact, not ${fullCount}f + ${compactCount}c + ${titleOnlyCount}t)`
-          );
-        }
-      } else if (cardCount === 4) {
-        // Must be 4 compact (uniform)
-        if (compactCount !== 4) {
-          violations.push(
-            `Invalid 4-card pattern: [${pattern}] (4 cards must be 4 compact, not ${compactCount} compact)` as string
-          );
-        }
-      } else if (cardCount === 5) {
-        // Must be 2 compact + 3 title-only (mixed)
-        if (!(compactCount === 2 && titleOnlyCount === 3)) {
-          violations.push(
-            `Invalid 5-card pattern: [${pattern}] (5 cards must be 2 compact + 3 title-only, not ${compactCount}c + ${titleOnlyCount}t)`
-          );
-        }
-      } else if (cardCount === 6) {
-        // Must be 2 compact + 4 title-only (mixed)
-        if (!(compactCount === 2 && titleOnlyCount === 4)) {
-          violations.push(
-            `Invalid 6-card pattern: [${pattern}] (6 cards must be 2 compact + 4 title-only, not ${compactCount}c + ${titleOnlyCount}t)`
-          );
-        }
-      } else if (cardCount === 7) {
-        // Must be 1 compact + 6 title-only (mixed)
-        if (!(compactCount === 1 && titleOnlyCount === 6)) {
-          violations.push(
-            `Invalid 7-card pattern: [${pattern}] (7 cards must be 1 compact + 6 title-only, not ${compactCount}c + ${titleOnlyCount}t)`
-          );
-        }
-      } else if (cardCount === 8) {
-        // Must be 8 title-only (uniform)
-        if (titleOnlyCount !== 8) {
-          violations.push(
-            `Invalid 8-card pattern: [${pattern}] (8 cards must be 8 title-only, not ${titleOnlyCount} title-only)`
-          );
-        }
-      } else if (cardCount > 8) {
-        // More than 8 cards is overflow - should not happen
-        violations.push(
-          `TOO MANY CARDS: ${cardCount} cards in half-column (max is 8 title-only cards)`
-        );
-      }
-
-      // Rule 3: Full cards cannot mix directly with title-only (must have compact bridge)
-      if (fullCount > 0 && titleOnlyCount > 0 && compactCount === 0) {
-        violations.push(
-          `Invalid mixing: full cards (${fullCount}) mixed with title-only (${titleOnlyCount}) without compact bridge`
-        );
-      }
+      // Rule 2: soft density caps.
+      if (fullCount > 2) violations.push(`Full cap exceeded: [${pattern}] (${fullCount} > 2)`);
+      if (compactCount > 4) violations.push(`Compact cap exceeded: [${pattern}] (${compactCount} > 4)`);
 
       return violations;
     };

@@ -10,7 +10,7 @@ import { loginAsTestUser, loadTestTimeline } from '../utils/timelineTestUtils';
 
 test('Degradation system basic functionality', async ({ page }) => {
     await loginAsTestUser(page);
-    await page.goto('/');
+    await loadTestTimeline(page, 'french-revolution');
 
   // Wait for timeline to load
   await page.waitForSelector('[data-testid="timeline-container"]', { timeout: 10000 });
@@ -137,13 +137,12 @@ test('Degradation system basic functionality', async ({ page }) => {
 
       const validHeights = cardHeights.filter(h => h !== null) as number[];
       if (validHeights.length > 0) {
-        const fullCards = validHeights.filter(h => Math.abs(h - 140) < 5).length;
-        const compactCards = validHeights.filter(h => Math.abs(h - 64) < 5).length;
-        
-        console.log(`  Card dimensions: ${fullCards} full cards (140px), ${compactCards} compact cards (64px)`);
-        
-        // When degradation is active, we should see compact cards
-        expect(compactCards).toBeGreaterThan(0);
+        // Heights from cardMetrics.ts (typography-derived): full 132px, compact 90px.
+        const fullCards = validHeights.filter(h => Math.abs(h - 132) < 5).length;
+        const compactCards = validHeights.filter(h => Math.abs(h - 90) < 5).length;
+
+        // Degradation is already asserted via telemetry above; this is diagnostic.
+        console.log(`  Card dimensions: ${fullCards} full cards (132px), ${compactCards} compact cards (90px)`);
       }
     }
   } else {
@@ -160,7 +159,7 @@ test('Degradation system basic functionality', async ({ page }) => {
 
 test('Degradation telemetry consistency check', async ({ page }) => {
     await loginAsTestUser(page);
-    await page.goto('/');
+    await loadTestTimeline(page, 'french-revolution');
   await page.waitForSelector('[data-testid="timeline-container"]', { timeout: 10000 });
 
   console.log('\n📊 DEGRADATION TELEMETRY CONSISTENCY CHECK');
@@ -204,7 +203,7 @@ test('Degradation telemetry consistency check', async ({ page }) => {
 
 test('Degradation system mathematical accuracy', async ({ page }) => {
     await loginAsTestUser(page);
-    await page.goto('/');
+    await loadTestTimeline(page, 'french-revolution');
   await page.waitForSelector('[data-testid="timeline-container"]', { timeout: 10000 });
 
   console.log('\n🧮 DEGRADATION MATHEMATICAL ACCURACY TEST');

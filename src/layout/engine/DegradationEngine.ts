@@ -11,9 +11,19 @@
 import type { Event } from '../../types';
 import type { LayoutConfig, PositionedCard, CardType } from '../types';
 import type { ColumnGroup, DegradationMetrics } from '../LayoutEngine';
-import { FEATURE_FLAGS } from '../config';
+import { FEATURE_FLAGS, CARD_HEIGHT_CELLS } from '../config';
 import { CARD_SPACING } from '../cardMetrics';
 import { getHalfColumnBudget } from '../layoutBudget';
+
+/**
+ * Per-tier density ceilings (soft). Historically these were "physics" limits
+ * approximating how many cards of each type fit; with the real cell budget now
+ * driving capacity (B2), they are readability/density preferences, not hard
+ * physical limits. Title-only intentionally has NO fixed cap — the budget is
+ * its only limit (the legacy value of 8 was dropped 2026-07-05 so tall
+ * viewports can show more events). See LAYOUT_IMPROVEMENT_PLAN.md §5.
+ */
+const DENSITY_CAPS: { full: number; compact: number } = { full: 2, compact: 4 };
 
 export class DegradationEngine {
   private config: LayoutConfig;
@@ -72,26 +82,30 @@ export class DegradationEngine {
   }
 
   /**
-   * Assign card types for a single half-column group.
-   * Prefers mixed types (full + compact + title-only) when enabled so we use
-   * available vertical space before jumping to uniform title-only.
+   * Assign card types for a single half-column group (B2 budget-driven packing).
+   * The per-position card types come from packHalfColumn, which fills the
+   * half-column's actual cell budget rather than a hard-coded count recipe.
    */
   private assignCardsForGroup(group: ColumnGroup): void {
-    const overflowLen = group.overflowEvents?.length ?? 0;
-    const totalEventCount = group.events.length + overflowLen;
+    const combined: Event[] = [
+      ...group.events,
+      ...(Array.isArray(group.overflowEvents) ? group.overflowEvents : [])
+    ];
 
-    if (FEATURE_FLAGS.ENABLE_MIXED_CARD_TYPES && totalEventCount > 1) {
-      const combined: Event[] = [
-        ...group.events,
-        ...(Array.isArray(group.overflowEvents) ? group.overflowEvents : [])
-      ];
-      const mixedTypes = this.determineMixedCardTypes(combined);
-      group.cards = this.createIndividualCards(group, mixedTypes);
+    this.degradationMetrics.totalGroups++;
+
+    if (combined.length === 0) {
+      group.cards = [];
+      group.overflowEvents = undefined;
       return;
     }
 
-    const cardType = this.determineCardType(group);
-    group.cards = this.createIndividualCards(group, [cardType]);
+    const types = FEATURE_FLAGS.ENABLE_MIXED_CARD_TYPES
+      ? this.packHalfColumn(combined.length, group.side)
+      : this.packUniform(combined.length);
+
+    group.cards = this.buildCards(group, combined, types);
+    this.trackGroupMetrics(types);
   }
 
   /** Returns true when the group ended up with more than one distinct card type. */
@@ -170,59 +184,17 @@ export class DegradationEngine {
   }
 
   /**
-   * Determine the appropriate UNIFORM card type for the entire group
-   * Uses viewport-aware capacity: if events exceed what physically fits
-   * for a given card type, degrade further.
+   * Uniform fallback used only when ENABLE_MIXED_CARD_TYPES is off.
+   * Picks the richest uniform tier whose full stack fits, then trims to what
+   * physically fits (mirrors the pre-B2 uniform behavior).
    */
-  private determineCardType(group: ColumnGroup): CardType {
-    // Consider both primary and overflow events when selecting card type
-    const overflowLen = Array.isArray(group.overflowEvents) ? group.overflowEvents.length : 0;
-    const eventCount = group.events.length + overflowLen;
-
-    // Track metrics for telemetry
-    this.degradationMetrics.totalGroups++;
-
-    // Viewport-aware degradation: check if events fit in the chosen type's capacity
-    if (eventCount <= this.getMaxCardsPerHalfColumn('full')) {
-      this.degradationMetrics.fullCardGroups++;
-      return 'full';
-    } else if (eventCount <= this.getMaxCardsPerHalfColumn('compact')) {
-      this.degradationMetrics.compactCardGroups++;
-
-      const fullCardHeight = this.config.cardConfigs.full.height;
-      const compactCardHeight = this.config.cardConfigs.compact.height;
-      const spaceSavedPerCard = fullCardHeight - compactCardHeight;
-      const totalSpaceSaved = spaceSavedPerCard * eventCount;
-
-      this.degradationMetrics.spaceReclaimed += totalSpaceSaved;
-      this.degradationMetrics.degradationTriggers.push({
-        groupId: group.id,
-        eventCount,
-        from: 'full',
-        to: 'compact',
-        spaceSaved: totalSpaceSaved
-      });
-
-      return 'compact';
-    } else {
-      this.degradationMetrics.titleOnlyCardGroups++;
-
-      const compactH = this.config.cardConfigs.compact.height;
-      const titleH = this.config.cardConfigs['title-only'].height;
-      const spaceSavedPerCard = compactH - titleH;
-      const totalSpaceSaved = Math.max(0, spaceSavedPerCard * Math.min(eventCount, 3));
-
-      this.degradationMetrics.spaceReclaimed += totalSpaceSaved;
-      this.degradationMetrics.degradationTriggers.push({
-        groupId: group.id,
-        eventCount,
-        from: 'compact',
-        to: 'title-only',
-        spaceSaved: totalSpaceSaved
-      });
-
-      return 'title-only';
-    }
+  private packUniform(n: number): CardType[] {
+    const tier: CardType =
+      n <= this.getMaxCardsPerHalfColumn('full') ? 'full'
+      : n <= this.getMaxCardsPerHalfColumn('compact') ? 'compact'
+      : 'title-only';
+    const visible = Math.min(n, this.getMaxCardsPerHalfColumn(tier));
+    return new Array(Math.max(0, visible)).fill(tier);
   }
 
 
@@ -341,123 +313,95 @@ export class DegradationEngine {
   }
 
   /**
-   * Determine mixed card types with chronological priority
-   * Earlier events get full cards, later events degrade to compact/title-only
+   * B2 — budget-driven card type packing for one half-column.
    *
-   * IMPORTANT: Returns single-element array for uniform types to signal standard capacity calculation
-   * Returns multi-element array only for truly mixed types
+   * Returns one CardType per VISIBLE event, in chronological order. The result
+   * is a non-increasing "staircase" (earliest events are richest) that fills the
+   * half-column's actual cell budget K = getHalfColumnBudget(config, side).cells,
+   * replacing the old hard-coded event-count recipes.
    *
-   * Viewport-aware: checks actual capacity to avoid creating cards that don't physically fit
+   * Algorithm:
+   *  1. Visibility first: visible = min(N, K), every card title-only. This
+   *     maximizes how many events are shown before spending any budget on
+   *     richer (taller) cards.
+   *  2. Two upgrade rounds spend the leftover budget from the earliest event
+   *     forward: title-only -> compact, then compact -> full. Each round walks
+   *     the cards in chronological order and upgrades a prefix until the tier
+   *     cap (DENSITY_CAPS) or the budget runs out. Because upgrades always take
+   *     the earliest cards first, the tier sequence stays non-increasing and
+   *     uniform tiers emerge naturally when the whole stack can reach one tier.
+   *
+   * Deterministic: identical (N, side, config) always yields the same array.
    */
-  private determineMixedCardTypes(events: Event[]): CardType[] {
-    const count = events.length;
-    const compactCap = this.getMaxCardsPerHalfColumn('compact');
+  private packHalfColumn(n: number, side: 'above' | 'below'): CardType[] {
+    const K = getHalfColumnBudget(this.config, side).cells;
+    if (K <= 0 || n <= 0) return [];
 
-    // SDS event-count thresholds drive type selection; createIndividualCards
-    // enforces viewport capacity separately (visible vs overflow).
-    if (count <= 2) {
-      return ['full'];
-    } else if (count === 3) {
-      // Mixed: 1 full + 2 compact (chronological priority)
-      return ['full', 'compact', 'compact'];
-    } else if (count <= 4) {
-      return ['compact'];
-    } else if (count <= compactCap) {
-      return ['compact'];
-    } else if (count === 5) {
-      // Mixed: 2 compact + 3 title-only
-      return ['compact', 'compact', 'title-only', 'title-only', 'title-only'];
-    } else if (count === 6) {
-      // Mixed: 2 compact + 4 title-only
-      return ['compact', 'compact', 'title-only', 'title-only', 'title-only', 'title-only'];
-    } else if (count === 7) {
-      // Mixed: 1 compact + 6 title-only
-      return ['compact', 'title-only', 'title-only', 'title-only', 'title-only', 'title-only', 'title-only'];
-    } else {
-      // 8+ events or anything exceeding compact capacity: uniform title-only
-      return ['title-only'];
+    const cost = CARD_HEIGHT_CELLS; // { full: 4, compact: 3, 'title-only': 1 }
+    const visible = Math.min(n, Math.floor(K / cost['title-only'])); // = min(n, K)
+    const types: CardType[] = new Array(visible).fill('title-only');
+    let usedCells = visible * cost['title-only'];
+
+    // Upgrade rounds, richest last. Each raises a prefix of cards one tier.
+    const rounds: Array<{ from: CardType; to: CardType; cap: number }> = [
+      { from: 'title-only', to: 'compact', cap: DENSITY_CAPS.compact },
+      { from: 'compact', to: 'full', cap: DENSITY_CAPS.full },
+    ];
+
+    for (const round of rounds) {
+      const delta = cost[round.to] - cost[round.from];
+      let upgraded = 0;
+      for (let i = 0; i < visible; i++) {
+        if (types[i] !== round.from) continue; // already past this tier (or a later, cheaper card)
+        if (upgraded >= round.cap) break; // tier density ceiling reached
+        if (usedCells + delta > K) break; // no budget left — stop (no skipping)
+        types[i] = round.to;
+        usedCells += delta;
+        upgraded++;
+      }
     }
+
+    return types;
   }
 
   /**
-   * Create individual cards for a group
+   * Build the positioned cards for a group from an explicit per-position type
+   * list (length = visible count). Remaining events become overflow.
    */
-  createIndividualCards(group: ColumnGroup, cardTypes: CardType[]): PositionedCard[] {
-    const cards: PositionedCard[] = [];
+  private buildCards(group: ColumnGroup, combined: Event[], types: CardType[]): PositionedCard[] {
     const cardConfig = this.config.cardConfigs;
+    const cards: PositionedCard[] = types.map((cardType, index) => ({
+      id: `${group.id}-${index}`,
+      event: combined[index],
+      x: 0,
+      y: 0,
+      width: cardConfig[cardType].width,
+      height: cardConfig[cardType].height,
+      cardType,
+      clusterId: group.id,
+    }));
 
-    // Build from combined pool so we can promote overflow into visible when switching to compact
-    const combined: Event[] = [
-      ...group.events,
-      ...(Array.isArray(group.overflowEvents) ? group.overflowEvents : [])
-    ];
-
-    // Determine max cards based on card types
-    let maxCardsPerHalfColumn: number;
-
-    if (cardTypes.length === 1) {
-      // Uniform card type - use simple capacity calculation
-      maxCardsPerHalfColumn = this.getMaxCardsPerHalfColumn(cardTypes[0]);
-    } else {
-      // Mixed card types - calculate based on accumulated heights
-      maxCardsPerHalfColumn = this.calculateMixedTypeCapacity(combined.length, cardTypes);
-    }
-
-    const visibleEvents = combined.slice(0, maxCardsPerHalfColumn);
-
-    // VALIDATION: Ensure card types are coherent with actual visible count
-    // Note: Mismatch validation removed to reduce console noise
-
-    visibleEvents.forEach((event, index) => {
-      // Cycle through card types if multiple provided
-      const cardType = cardTypes[index % cardTypes.length];
-
-      cards.push({
-        id: `${group.id}-${index}`,
-        event,
-        x: 0,
-        y: 0,
-        width: cardConfig[cardType].width,
-        height: cardConfig[cardType].height,
-        cardType,
-        clusterId: group.id
-      });
-    });
-
-    // Update overflowEvents to remainder for accurate anchor counts and future passes
-    const remainder = combined.slice(visibleEvents.length);
+    const remainder = combined.slice(types.length);
     group.overflowEvents = remainder.length > 0 ? remainder : undefined;
-
     return cards;
   }
 
   /**
-   * Calculate how many cards fit in a half-column with mixed card types
-   * based on available vertical space
+   * Update degradation telemetry for a packed group. A group is classified by
+   * its richest (earliest) card; spaceReclaimed measures the vertical space
+   * saved versus rendering every visible card as a full card.
    */
-  private calculateMixedTypeCapacity(eventCount: number, cardTypes: CardType[]): number {
+  private trackGroupMetrics(types: CardType[]): void {
+    if (types.length === 0) return;
+
+    const richest = types[0];
+    if (richest === 'full') this.degradationMetrics.fullCardGroups++;
+    else if (richest === 'compact') this.degradationMetrics.compactCardGroups++;
+    else this.degradationMetrics.titleOnlyCardGroups++;
+
     const cardConfig = this.config.cardConfigs;
-    const cardSpacing = CARD_SPACING; // pixels between cards
-
-    // Available vertical space for a half-column (single source of truth).
-    const availableHeight = getHalfColumnBudget(this.config, 'above').pixels;
-
-    let accumulatedHeight = 0;
-    let cardsFit = 0;
-
-    for (let i = 0; i < eventCount; i++) {
-      const cardType = cardTypes[i % cardTypes.length];
-      const cardHeight = cardConfig[cardType].height;
-      const heightWithSpacing = cardHeight + (i > 0 ? cardSpacing : 0);
-
-      if (accumulatedHeight + heightWithSpacing <= availableHeight) {
-        accumulatedHeight += heightWithSpacing;
-        cardsFit++;
-      } else {
-        break; // No more cards fit
-      }
-    }
-
-    return cardsFit;
+    const fullStackHeight = cardConfig.full.height * types.length;
+    const actualHeight = types.reduce((sum, t) => sum + cardConfig[t].height, 0);
+    this.degradationMetrics.spaceReclaimed += Math.max(0, fullStackHeight - actualHeight);
   }
 }
