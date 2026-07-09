@@ -835,7 +835,7 @@ test.describe('Card Text Rendering & Clipping Detection', () => {
 ## Remediation Suggestions
 ${report.overflowIssues.byType.compact > 0 ? '⚠️ **Compact cards have overflow issues** - Increase card height from 82px to 90px or reduce padding' : '✅ No compact card issues'}
 ${report.overflowIssues.byType.full > 0 ? '⚠️ **Full cards have overflow issues** - Review line-clamp configuration' : '✅ No full card issues'}
-${report.cssIssues > 0 ? '⚠️ **CSS configuration issues detected** - Review line-clamp settings in CardRenderer.tsx' : '✅ No CSS issues'}
+${report.cssIssues > 0 ? '⚠️ **CSS configuration issues detected** - Review line-clamp settings in DeterministicLayoutComponent.tsx' : '✅ No CSS issues'}
 
 ## Test Methods Used
 1. **ScrollHeight Overflow Detection** - Detected ${report.overflowIssues.total} cards with hidden content

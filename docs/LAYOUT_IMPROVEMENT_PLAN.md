@@ -253,7 +253,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 
 ---
 
-#### C2 — Consolidate card content markup (CardRenderer vs live path) ⬜ TODO
+#### C2 — Consolidate card content markup (CardRenderer vs live path) ✅ DONE
 **Priority:** P3 · **Depends on:** B2
 
 **Problem.** `CardRenderer.tsx` mirrors the card DOM of `DeterministicLayoutComponent.tsx` but is not the live path; every card change must be made twice (both were touched in Phase 1). Drift risk. Legacy `Node.tsx` uses a third, disconnected density model.
@@ -261,10 +261,10 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 **Spec.** Determine consumers of `CardRenderer.tsx` and `Node.tsx` (grep + render tests). If `CardRenderer` has real consumers: extract shared `FullCardContent`/`CompactCardContent`/`TitleOnlyCardContent` components into one module imported by both paths. If it has none: delete it. Same decision procedure for `Node.tsx`. No visual changes — this is pure deduplication.
 
 **Acceptance criteria.**
-- [ ] Card content markup exists in exactly one module; T104 pixel/clamp results unchanged (compare its report output before/after).
-- [ ] All §2 gates pass.
+- [x] Card content markup exists in exactly one module; T104 pixel/clamp results unchanged (compare its report output before/after).
+- [x] All §2 gates pass.
 
-**Completion log:** —
+**Completion log:** 2026-07-09 (coordinator). Consumer audit (grep across `src` + `tests`): **zero** live/test/JSX consumers of `CardRenderer` (only a barrel re-export in `layout/index.ts` + a stale comment in test 104) → deleted `src/layout/CardRenderer.tsx`, removed its `index.ts` export. `Node.tsx`'s only consumer was `src/components/Timeline.tsx`, itself LEGACY and imported nowhere (self-declared "keep for reference only") → deleted both `src/timeline/Node/Node.tsx` (dir now empty, auto-removed) and `src/components/Timeline.tsx`. That orphaned `src/app/hooks/useElementSize.ts` (used only by the dead `Timeline.tsx`, no other consumers) → deleted it too. Fixed the stale `CardRenderer.tsx` reference in test 104's report string → `DeterministicLayoutComponent.tsx`. Card content markup now lives in exactly one module (`DeterministicLayoutComponent.tsx`, live path). **No visual/behavior change** — pure dead-code deletion (4 files). Verified: build ✅, lint 0 errors (28 pre-existing warnings) ✅, 261 unit tests ✅, Playwright T104 desktop 13/13 ✅ with **byte-identical** report (full gap 0.154, compact 0.182, distribution full=6 compact=7 title-only=48 — matches C3 baseline), smoke ✅.
 
 ---
 
@@ -315,6 +315,7 @@ Verified: T104 (15 tests), 48, 67, 36 all green on desktop; new blocks green on 
 
 | Date | Change |
 |------|--------|
+| 2026-07-09 | C2 ✅: card-markup deduplication — deleted `CardRenderer.tsx` (no consumers), legacy `Timeline.tsx` + `Node.tsx` (Timeline dead, Node used only by it), and now-orphaned `useElementSize.ts` (4 files). Live card markup is now single-source in `DeterministicLayoutComponent.tsx`. Pure dead-code removal, no visual change — T104 report byte-identical (full 0.154 / compact 0.182). Whole plan now 100% complete (all P1/P2/P3 ✅). |
 | 2026-07-04 | Plan created from Phase 1 findings (coordinator analysis of cardMetrics work, dead-code audit, test-suite review). |
 | 2026-07-05 | B1 ✅: `layoutBudget.ts` unifies the vertical-budget math (was 3 disagreeing copies). No-behavior-change refactor — degradation value identical, CapacityModel +2px (no boundary crossed), per-side asymmetry now explicit. Foundation for B2/B3/B4. |
 | 2026-07-05 | C3 ✅: quantized per-instance card heights (Option C) — cards size to measured content; gap ratio full 0.263–0.390 → 0.154, compact 0.337 → 0.182 (structural floor). Height-based packing + re-pack-to-fill (richer columns), per-card render clamps (box==clamp → no clipping). Verified across 15 zoom levels. |
